@@ -1,23 +1,39 @@
-export default function Page() {
+import predictions from "@/lib/data/predictions.json"
+import { getResults } from "@/lib/results"
+import { buildStandings } from "@/lib/scoring"
+import type { PredictionData } from "@/lib/types"
+import { ContestApp } from "@/components/contest-app"
+import { SiteHeader } from "@/components/site-header"
+
+export const revalidate = 300
+
+export default async function Page() {
+  const data = predictions as PredictionData
+  const { results, source, fetchedAt, note } = await getResults()
+  const standings = buildStandings(data.contestants, results)
+
+  const settledCount = data.matches.filter((m) => results[m.id]?.status === "FINISHED").length
+
   return (
-    <main className="relative flex min-h-screen items-center justify-center bg-[color:light-dark(#fff,#000)] text-[color:light-dark(#000,#fff)]">
-      <svg
-        aria-hidden="true"
-        className="size-20"
-        fill="none"
-        viewBox="0 0 20 20"
-        xmlns="http://www.w3.org/2000/svg"
-        stroke="currentColor"
-        strokeWidth="0.5"
-      >
-        <path
-          d="M14.2 14.2H17V6.9375C17 4.76288 15.2371 3 13.0625 3H5.8V5.8M14.2 14.2V7.79063L7.79062 14.2H14.2ZM14.2 14.2V17H6.9375C4.76288 17 3 15.2371 3 13.0625V5.8H5.8M5.8 5.8V12.2313L12.2313 5.8H5.8Z"
-          strokeLinejoin="round"
+    <div className="min-h-screen bg-background">
+      <SiteHeader
+        source={source}
+        fetchedAt={fetchedAt}
+        note={note}
+        settledCount={settledCount}
+        totalMatches={data.matches.length}
+        contestantCount={data.contestants.length}
+        leader={standings[0]?.name}
+      />
+      <main className="mx-auto w-full max-w-5xl px-4 pb-20 pt-6 md:pt-8">
+        <ContestApp
+          standings={standings}
+          matches={data.matches}
+          contestants={data.contestants}
+          groupQuestions={data.groupQuestions}
+          results={results}
         />
-      </svg>
-      <p className="absolute left-1/2 top-[calc(50%+56px)] -translate-x-1/2 whitespace-nowrap text-sm font-medium text-muted-foreground">
-        Your v0 generation will show here.
-      </p>
-    </main>
+      </main>
+    </div>
   )
 }
