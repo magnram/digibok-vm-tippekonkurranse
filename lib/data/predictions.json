@@ -1,0 +1,1458 @@
+{
+  "matches": [
+    {
+      "id": "m1",
+      "group": "A",
+      "date": "11.06.2026",
+      "time": "21:00",
+      "home": "Mexico",
+      "away": "Sør-Afrika"
+    },
+    {
+      "id": "m2",
+      "group": "C",
+      "date": "14.06.2026",
+      "time": "00:00",
+      "home": "Brasil",
+      "away": "Marokko"
+    },
+    {
+      "id": "m3",
+      "group": "H",
+      "date": "15.06.2026",
+      "time": "18:00",
+      "home": "Spania",
+      "away": "Kapp Verde"
+    },
+    {
+      "id": "m4",
+      "group": "J",
+      "date": "17.06.2026",
+      "time": "03:00",
+      "home": "Argentina",
+      "away": "Algerie"
+    },
+    {
+      "id": "m5",
+      "group": "L",
+      "date": "17.06.2026",
+      "time": "22:00",
+      "home": "England",
+      "away": "Kroatia"
+    },
+    {
+      "id": "m6",
+      "group": "F",
+      "date": "20.06.2026",
+      "time": "19:00",
+      "home": "Nederland",
+      "away": "Sverige"
+    },
+    {
+      "id": "m7",
+      "group": "I",
+      "date": "23.06.2026",
+      "time": "02:00",
+      "home": "Norge",
+      "away": "Senegal"
+    },
+    {
+      "id": "m8",
+      "group": "E",
+      "date": "25.06.2026",
+      "time": "22:00",
+      "home": "Ecuador",
+      "away": "Tyskland"
+    },
+    {
+      "id": "m9",
+      "group": "I",
+      "date": "26.06.2026",
+      "time": "21:00",
+      "home": "Norge",
+      "away": "Frankrike"
+    },
+    {
+      "id": "m10",
+      "group": "K",
+      "date": "27.06.2026",
+      "time": "02:00",
+      "home": "Colombia",
+      "away": "Portugal"
+    }
+  ],
+  "groupQuestions": [
+    {
+      "row": 22,
+      "key": "gqA",
+      "text": "Hvem blir vinner i gruppe A?"
+    },
+    {
+      "row": 23,
+      "key": "gqB",
+      "text": "Hvem blir toer i gruppe B?"
+    },
+    {
+      "row": 24,
+      "key": "gqC",
+      "text": "Går 3. plass i gruppe C videre? (J/N)"
+    },
+    {
+      "row": 25,
+      "key": "gqD",
+      "text": "Hvem blir vinner i gruppe D?"
+    },
+    {
+      "row": 26,
+      "key": "gqF",
+      "text": "Hvem blir vinner i gruppe F?"
+    },
+    {
+      "row": 27,
+      "key": "gqG",
+      "text": "Hvem blir vinner i gruppe G?"
+    },
+    {
+      "row": 28,
+      "key": "gqI",
+      "text": "Hvem blir toer i gruppe I?"
+    },
+    {
+      "row": 29,
+      "key": "gqK",
+      "text": "Går 3.plass i gruppe K videre? (J/N)"
+    }
+  ],
+  "contestants": [
+    {
+      "name": "Ahilan",
+      "groupMatches": [
+        {
+          "id": "m1",
+          "home": 2,
+          "away": 0
+        },
+        {
+          "id": "m2",
+          "home": 1,
+          "away": 0
+        },
+        {
+          "id": "m3",
+          "home": 3,
+          "away": 0
+        },
+        {
+          "id": "m4",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m5",
+          "home": 0,
+          "away": 0
+        },
+        {
+          "id": "m6",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m7",
+          "home": 0,
+          "away": 0
+        },
+        {
+          "id": "m8",
+          "home": 0,
+          "away": 1
+        },
+        {
+          "id": "m9",
+          "home": 0,
+          "away": 1
+        },
+        {
+          "id": "m10",
+          "home": 2,
+          "away": 3
+        }
+      ],
+      "groupQuestions": {
+        "gqA": "Tsjekkia",
+        "gqB": "Sveits",
+        "gqC": "N",
+        "gqD": "Tyrkia",
+        "gqF": "Nederland",
+        "gqG": "Belgia",
+        "gqI": "Senegal",
+        "gqK": "N"
+      },
+      "norway": {
+        "score7plus": "N",
+        "concede4plus": "N",
+        "meetBrazil": "N",
+        "furthest": "England",
+        "topScorer": "Haaland"
+      },
+      "knockout": {
+        "swedenAdvances": "N",
+        "europeanTeams": "8",
+        "hostsAdvance": "Mexico",
+        "quarterfinalists": [
+          "Spania",
+          "Frankrike",
+          "Portugal",
+          "Brasil",
+          "Argentina",
+          "Tyskland",
+          "Marokka",
+          "Senegal"
+        ]
+      },
+      "final": {
+        "team1": "Frankrike",
+        "team2": "Spania",
+        "score1": 0,
+        "score2": 0,
+        "champion": "Spania",
+        "topScorerCountry": "Portugal"
+      }
+    },
+    {
+      "name": "Haakon",
+      "groupMatches": [
+        {
+          "id": "m1",
+          "home": 3,
+          "away": 0
+        },
+        {
+          "id": "m2",
+          "home": 3,
+          "away": 2
+        },
+        {
+          "id": "m3",
+          "home": 4,
+          "away": 0
+        },
+        {
+          "id": "m4",
+          "home": 3,
+          "away": 1
+        },
+        {
+          "id": "m5",
+          "home": 3,
+          "away": 0
+        },
+        {
+          "id": "m6",
+          "home": 2,
+          "away": 0
+        },
+        {
+          "id": "m7",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m8",
+          "home": 1,
+          "away": 2
+        },
+        {
+          "id": "m9",
+          "home": 2,
+          "away": 2
+        },
+        {
+          "id": "m10",
+          "home": 1,
+          "away": 2
+        }
+      ],
+      "groupQuestions": {
+        "gqA": "Mexico",
+        "gqB": "Sveits",
+        "gqC": "J",
+        "gqD": "USA",
+        "gqF": "Nederland",
+        "gqG": "Belgia",
+        "gqI": "Norge",
+        "gqK": "N"
+      },
+      "norway": {
+        "score7plus": "J",
+        "concede4plus": "J",
+        "meetBrazil": "J",
+        "furthest": "England",
+        "topScorer": "Haaland"
+      },
+      "knockout": {
+        "swedenAdvances": "J",
+        "europeanTeams": "9",
+        "hostsAdvance": "Ingen",
+        "quarterfinalists": [
+          "Tyskland",
+          "Norge",
+          "Spania",
+          "Frankrike",
+          "England",
+          "Argentina",
+          "Marokko",
+          "Portugal"
+        ]
+      },
+      "final": {
+        "team1": "Spania",
+        "team2": "Argentina",
+        "score1": 2,
+        "score2": 1,
+        "champion": "Spania",
+        "topScorerCountry": "Spania"
+      }
+    },
+    {
+      "name": "AI",
+      "groupMatches": [
+        {
+          "id": "m1",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m2",
+          "home": 3,
+          "away": 1
+        },
+        {
+          "id": "m3",
+          "home": 6,
+          "away": 0
+        },
+        {
+          "id": "m4",
+          "home": 3,
+          "away": 0
+        },
+        {
+          "id": "m5",
+          "home": 2,
+          "away": 2
+        },
+        {
+          "id": "m6",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m7",
+          "home": 1,
+          "away": 0
+        },
+        {
+          "id": "m8",
+          "home": 1,
+          "away": 2
+        },
+        {
+          "id": "m9",
+          "home": 2,
+          "away": 2
+        },
+        {
+          "id": "m10",
+          "home": 1,
+          "away": 2
+        }
+      ],
+      "groupQuestions": {
+        "gqA": "Mexico",
+        "gqB": "Sveits",
+        "gqC": "J",
+        "gqD": "USA",
+        "gqF": "Nederland",
+        "gqG": "Belgia",
+        "gqI": "Norge",
+        "gqK": "N"
+      },
+      "norway": {
+        "score7plus": "J",
+        "concede4plus": "J",
+        "meetBrazil": "N",
+        "furthest": "England",
+        "topScorer": "Haaland"
+      },
+      "knockout": {
+        "swedenAdvances": "J",
+        "europeanTeams": "15",
+        "hostsAdvance": "USA",
+        "quarterfinalists": [
+          "Argentina",
+          "Brasil",
+          "Frankrike",
+          "England",
+          "Spania",
+          "Portugal",
+          "Tyskland",
+          "Nederland"
+        ]
+      },
+      "final": {
+        "team1": "Frankrike",
+        "team2": "Brasil",
+        "score1": 2,
+        "score2": 1,
+        "champion": "Frankrike",
+        "topScorerCountry": "England"
+      }
+    },
+    {
+      "name": "Jardar",
+      "groupMatches": [
+        {
+          "id": "m1",
+          "home": 2,
+          "away": 0
+        },
+        {
+          "id": "m2",
+          "home": 0,
+          "away": 0
+        },
+        {
+          "id": "m3",
+          "home": 3,
+          "away": 0
+        },
+        {
+          "id": "m4",
+          "home": 1,
+          "away": 0
+        },
+        {
+          "id": "m5",
+          "home": 1,
+          "away": 1
+        },
+        {
+          "id": "m6",
+          "home": 2,
+          "away": 0
+        },
+        {
+          "id": "m7",
+          "home": 1,
+          "away": 0
+        },
+        {
+          "id": "m8",
+          "home": 0,
+          "away": 2
+        },
+        {
+          "id": "m9",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m10",
+          "home": 0,
+          "away": 1
+        }
+      ],
+      "groupQuestions": {
+        "gqA": "Mexico",
+        "gqB": "Bosnia",
+        "gqC": "J",
+        "gqD": "Paraguay",
+        "gqF": "Nederland",
+        "gqG": "Belgia",
+        "gqI": "Senegal",
+        "gqK": "J"
+      },
+      "norway": {
+        "score7plus": "N",
+        "concede4plus": "N",
+        "meetBrazil": "N",
+        "furthest": "England",
+        "topScorer": "Haaland"
+      },
+      "knockout": {
+        "swedenAdvances": "N",
+        "europeanTeams": "16",
+        "hostsAdvance": "Mexico",
+        "quarterfinalists": [
+          "Spania",
+          "Frankrike",
+          "Argentina",
+          "England",
+          "Brasil",
+          "Tyskland",
+          "Marokko",
+          "Norge"
+        ]
+      },
+      "final": {
+        "team1": "Spania",
+        "team2": "England",
+        "score1": 1,
+        "score2": 1,
+        "champion": "England",
+        "topScorerCountry": "Norge"
+      }
+    },
+    {
+      "name": "Kari",
+      "groupMatches": [
+        {
+          "id": "m1",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m2",
+          "home": 1,
+          "away": 1
+        },
+        {
+          "id": "m3",
+          "home": 3,
+          "away": 0
+        },
+        {
+          "id": "m4",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m5",
+          "home": 1,
+          "away": 1
+        },
+        {
+          "id": "m6",
+          "home": 2,
+          "away": 0
+        },
+        {
+          "id": "m7",
+          "home": 1,
+          "away": 1
+        },
+        {
+          "id": "m8",
+          "home": 0,
+          "away": 1
+        },
+        {
+          "id": "m9",
+          "home": 1,
+          "away": 3
+        },
+        {
+          "id": "m10",
+          "home": 0,
+          "away": 2
+        }
+      ],
+      "groupQuestions": {
+        "gqA": "Mexico",
+        "gqB": "Sveits",
+        "gqC": "J",
+        "gqD": "Tyrkia",
+        "gqF": "Nederland",
+        "gqG": "Belgia",
+        "gqI": "Norge",
+        "gqK": "N"
+      },
+      "norway": {
+        "score7plus": "N",
+        "concede4plus": "J",
+        "meetBrazil": "N",
+        "furthest": "",
+        "topScorer": "Haaland"
+      },
+      "knockout": {
+        "swedenAdvances": "N",
+        "europeanTeams": "13",
+        "hostsAdvance": "Mexico",
+        "quarterfinalists": [
+          "Spania",
+          "Portugal",
+          "Frankrike",
+          "Nederland",
+          "Kroatia",
+          "Senegal",
+          "Tyskland",
+          "Argentina"
+        ]
+      },
+      "final": {
+        "team1": "Spania",
+        "team2": "Frankrike",
+        "score1": 1,
+        "score2": 1,
+        "champion": "Frankrike",
+        "topScorerCountry": "Frankrike"
+      }
+    },
+    {
+      "name": "Knut",
+      "groupMatches": [
+        {
+          "id": "m1",
+          "home": 1,
+          "away": 0
+        },
+        {
+          "id": "m2",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m3",
+          "home": 1,
+          "away": 1
+        },
+        {
+          "id": "m4",
+          "home": 0,
+          "away": 1
+        },
+        {
+          "id": "m5",
+          "home": 3,
+          "away": 0
+        },
+        {
+          "id": "m6",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m7",
+          "home": 2,
+          "away": 2
+        },
+        {
+          "id": "m8",
+          "home": 0,
+          "away": 1
+        },
+        {
+          "id": "m9",
+          "home": 1,
+          "away": 3
+        },
+        {
+          "id": "m10",
+          "home": 0,
+          "away": 0
+        }
+      ],
+      "groupQuestions": {
+        "gqA": "Sør-Korea",
+        "gqB": "Canada",
+        "gqC": "J",
+        "gqD": "Tyrkia",
+        "gqF": "Nederland",
+        "gqG": "Belgia",
+        "gqI": "Norge",
+        "gqK": "N"
+      },
+      "norway": {
+        "score7plus": "N",
+        "concede4plus": "J",
+        "meetBrazil": "J",
+        "furthest": "England",
+        "topScorer": "Sørloth"
+      },
+      "knockout": {
+        "swedenAdvances": "N",
+        "europeanTeams": "14",
+        "hostsAdvance": "Mexico, USA",
+        "quarterfinalists": [
+          "Brasil",
+          "England",
+          "Tyskland",
+          "Mexico",
+          "Spania",
+          "Nederland",
+          "Marokko",
+          "Portugal"
+        ]
+      },
+      "final": {
+        "team1": "Spania",
+        "team2": "England",
+        "score1": 2,
+        "score2": 1,
+        "champion": "Spania",
+        "topScorerCountry": "Brasil"
+      }
+    },
+    {
+      "name": "Leif Anders",
+      "groupMatches": [
+        {
+          "id": "m1",
+          "home": 2,
+          "away": 0
+        },
+        {
+          "id": "m2",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m3",
+          "home": 4,
+          "away": 0
+        },
+        {
+          "id": "m4",
+          "home": 3,
+          "away": 1
+        },
+        {
+          "id": "m5",
+          "home": 1,
+          "away": 0
+        },
+        {
+          "id": "m6",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m7",
+          "home": 1,
+          "away": 1
+        },
+        {
+          "id": "m8",
+          "home": 0,
+          "away": 1
+        },
+        {
+          "id": "m9",
+          "home": 1,
+          "away": 3
+        },
+        {
+          "id": "m10",
+          "home": 0,
+          "away": 1
+        }
+      ],
+      "groupQuestions": {
+        "gqA": "Mexico",
+        "gqB": "Canada",
+        "gqC": "Ja",
+        "gqD": "USA",
+        "gqF": "Nederland",
+        "gqG": "Belgia",
+        "gqI": "Norge",
+        "gqK": "Nei"
+      },
+      "norway": {
+        "score7plus": "N",
+        "concede4plus": "N",
+        "meetBrazil": "N",
+        "furthest": "England",
+        "topScorer": "Haaland"
+      },
+      "knockout": {
+        "swedenAdvances": "J",
+        "europeanTeams": "13",
+        "hostsAdvance": "USA, Mexico",
+        "quarterfinalists": [
+          "Frankrike",
+          "Nederland",
+          "Spania",
+          "USA",
+          "Brasil",
+          "England",
+          "Argentina",
+          "Portugal"
+        ]
+      },
+      "final": {
+        "team1": "Frankrike",
+        "team2": "Brasil",
+        "score1": 2,
+        "score2": 1,
+        "champion": "Frankrike",
+        "topScorerCountry": "England"
+      }
+    },
+    {
+      "name": "Magnus",
+      "groupMatches": [
+        {
+          "id": "m1",
+          "home": 2,
+          "away": 0
+        },
+        {
+          "id": "m2",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m3",
+          "home": 3,
+          "away": 0
+        },
+        {
+          "id": "m4",
+          "home": 2,
+          "away": 0
+        },
+        {
+          "id": "m5",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m6",
+          "home": 2,
+          "away": 0
+        },
+        {
+          "id": "m7",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m8",
+          "home": 0,
+          "away": 1
+        },
+        {
+          "id": "m9",
+          "home": 1,
+          "away": 2
+        },
+        {
+          "id": "m10",
+          "home": 1,
+          "away": 2
+        }
+      ],
+      "groupQuestions": {
+        "gqA": "Mexico",
+        "gqB": "Canada",
+        "gqC": "Ja",
+        "gqD": "USA",
+        "gqF": "Nederland",
+        "gqG": "Belgia",
+        "gqI": "Norge",
+        "gqK": "Nei"
+      },
+      "norway": {
+        "score7plus": "Ja",
+        "concede4plus": "Ja",
+        "meetBrazil": "Nei",
+        "furthest": "England",
+        "topScorer": "Haaland"
+      },
+      "knockout": {
+        "swedenAdvances": "Ja",
+        "europeanTeams": "13",
+        "hostsAdvance": "Mexico og USA",
+        "quarterfinalists": [
+          "Spania",
+          "Frankrike",
+          "England",
+          "Brasil",
+          "Argentina",
+          "Portugal",
+          "Tyskland",
+          "Nederland"
+        ]
+      },
+      "final": {
+        "team1": "Spania",
+        "team2": "England",
+        "score1": 1,
+        "score2": 1,
+        "champion": "Spania",
+        "topScorerCountry": "Frankrike"
+      }
+    },
+    {
+      "name": "Malin",
+      "groupMatches": [
+        {
+          "id": "m1",
+          "home": 2,
+          "away": 0
+        },
+        {
+          "id": "m2",
+          "home": 1,
+          "away": 0
+        },
+        {
+          "id": "m3",
+          "home": 3,
+          "away": 0
+        },
+        {
+          "id": "m4",
+          "home": 2,
+          "away": 0
+        },
+        {
+          "id": "m5",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m6",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m7",
+          "home": 2,
+          "away": 0
+        },
+        {
+          "id": "m8",
+          "home": 0,
+          "away": 2
+        },
+        {
+          "id": "m9",
+          "home": 1,
+          "away": 2
+        },
+        {
+          "id": "m10",
+          "home": 1,
+          "away": 2
+        }
+      ],
+      "groupQuestions": {
+        "gqA": "Mexico",
+        "gqB": "Canada",
+        "gqC": "J",
+        "gqD": "USA",
+        "gqF": "Nederland",
+        "gqG": "Belgia",
+        "gqI": "Norge",
+        "gqK": "N"
+      },
+      "norway": {
+        "score7plus": "N",
+        "concede4plus": "J",
+        "meetBrazil": "N",
+        "furthest": "England",
+        "topScorer": "Haaland"
+      },
+      "knockout": {
+        "swedenAdvances": "J",
+        "europeanTeams": "12",
+        "hostsAdvance": "Mexico og USA",
+        "quarterfinalists": [
+          "Spania",
+          "Frankrike",
+          "England",
+          "Brasil",
+          "Argentina",
+          "Portugal",
+          "Tyskland",
+          "Nederland"
+        ]
+      },
+      "final": {
+        "team1": "Spania",
+        "team2": "England",
+        "score1": 2,
+        "score2": 1,
+        "champion": "Spania",
+        "topScorerCountry": "Frankrike"
+      }
+    },
+    {
+      "name": "Marit",
+      "groupMatches": [
+        {
+          "id": "m1",
+          "home": 2,
+          "away": 0
+        },
+        {
+          "id": "m2",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m3",
+          "home": 3,
+          "away": 0
+        },
+        {
+          "id": "m4",
+          "home": 3,
+          "away": 0
+        },
+        {
+          "id": "m5",
+          "home": 1,
+          "away": 1
+        },
+        {
+          "id": "m6",
+          "home": 1,
+          "away": 0
+        },
+        {
+          "id": "m7",
+          "home": 1,
+          "away": 1
+        },
+        {
+          "id": "m8",
+          "home": 1,
+          "away": 3
+        },
+        {
+          "id": "m9",
+          "home": 1,
+          "away": 2
+        },
+        {
+          "id": "m10",
+          "home": 1,
+          "away": 2
+        }
+      ],
+      "groupQuestions": {
+        "gqA": "Mexico",
+        "gqB": "Sveits",
+        "gqC": "ja",
+        "gqD": "USA",
+        "gqF": "Nederland",
+        "gqG": "Belgia",
+        "gqI": "Senegal",
+        "gqK": "Nei"
+      },
+      "norway": {
+        "score7plus": "N",
+        "concede4plus": "J",
+        "meetBrazil": "N",
+        "furthest": "England",
+        "topScorer": "Haaland"
+      },
+      "knockout": {
+        "swedenAdvances": "J",
+        "europeanTeams": "10",
+        "hostsAdvance": "USA, Mexico",
+        "quarterfinalists": [
+          "Brasil",
+          "Argentina",
+          "Frankrike",
+          "England",
+          "Portugal",
+          "Nederland",
+          "Tyskalnd",
+          "Spania"
+        ]
+      },
+      "final": {
+        "team1": "Brasil",
+        "team2": "Frankrike",
+        "score1": 2,
+        "score2": 1,
+        "champion": "Frankrike",
+        "topScorerCountry": "Brasil"
+      }
+    },
+    {
+      "name": "Trude",
+      "groupMatches": [
+        {
+          "id": "m1",
+          "home": 2,
+          "away": 0
+        },
+        {
+          "id": "m2",
+          "home": 1,
+          "away": 1
+        },
+        {
+          "id": "m3",
+          "home": 4,
+          "away": 0
+        },
+        {
+          "id": "m4",
+          "home": 3,
+          "away": 1
+        },
+        {
+          "id": "m5",
+          "home": 1,
+          "away": 1
+        },
+        {
+          "id": "m6",
+          "home": 2,
+          "away": 0
+        },
+        {
+          "id": "m7",
+          "home": 2,
+          "away": 0
+        },
+        {
+          "id": "m8",
+          "home": 1,
+          "away": 2
+        },
+        {
+          "id": "m9",
+          "home": 1,
+          "away": 2
+        },
+        {
+          "id": "m10",
+          "home": 1,
+          "away": 3
+        }
+      ],
+      "groupQuestions": {
+        "gqA": "Mexico",
+        "gqB": "Bosnia",
+        "gqC": "N",
+        "gqD": "Tyrkia",
+        "gqF": "Nederland",
+        "gqG": "Egypt",
+        "gqI": "Norge",
+        "gqK": "N"
+      },
+      "norway": {
+        "score7plus": "N",
+        "concede4plus": "N",
+        "meetBrazil": "N",
+        "furthest": "England",
+        "topScorer": "Haaland"
+      },
+      "knockout": {
+        "swedenAdvances": "J",
+        "europeanTeams": "11",
+        "hostsAdvance": "Ingen",
+        "quarterfinalists": [
+          "Frankrike",
+          "Brasil",
+          "Argentina",
+          "England",
+          "Tyskland",
+          "Spania",
+          "Sveits",
+          "Tyrkia"
+        ]
+      },
+      "final": {
+        "team1": "England",
+        "team2": "Spania",
+        "score1": 1,
+        "score2": 1,
+        "champion": "England",
+        "topScorerCountry": "Spania"
+      }
+    },
+    {
+      "name": "Vidar",
+      "groupMatches": [
+        {
+          "id": "m1",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m2",
+          "home": 1,
+          "away": 0
+        },
+        {
+          "id": "m3",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m4",
+          "home": 3,
+          "away": 1
+        },
+        {
+          "id": "m5",
+          "home": 0,
+          "away": 1
+        },
+        {
+          "id": "m6",
+          "home": 3,
+          "away": 1
+        },
+        {
+          "id": "m7",
+          "home": 2,
+          "away": 3
+        },
+        {
+          "id": "m8",
+          "home": 0,
+          "away": 3
+        },
+        {
+          "id": "m9",
+          "home": 2,
+          "away": 3
+        },
+        {
+          "id": "m10",
+          "home": 0,
+          "away": 1
+        }
+      ],
+      "groupQuestions": {
+        "gqA": "Sør Korea",
+        "gqB": "Bosnia-Herceg.",
+        "gqC": "N",
+        "gqD": "Australia",
+        "gqF": "Nederland",
+        "gqG": "Iran",
+        "gqI": "Senegal",
+        "gqK": "N"
+      },
+      "norway": {
+        "score7plus": "N",
+        "concede4plus": "J",
+        "meetBrazil": "N",
+        "furthest": "England",
+        "topScorer": "Haaland"
+      },
+      "knockout": {
+        "swedenAdvances": "N",
+        "europeanTeams": "9",
+        "hostsAdvance": "Mexico",
+        "quarterfinalists": [
+          "Tyskland",
+          "Frankrike",
+          "Spania",
+          "Kroatia",
+          "Brasil",
+          "Marokko",
+          "Argentina",
+          "Portugal"
+        ]
+      },
+      "final": {
+        "team1": "Kroatia",
+        "team2": "Frankrike",
+        "score1": 1,
+        "score2": 2,
+        "champion": "Frankrike",
+        "topScorerCountry": "Frankrike"
+      }
+    },
+    {
+      "name": "Øystein",
+      "groupMatches": [
+        {
+          "id": "m1",
+          "home": 3,
+          "away": 1
+        },
+        {
+          "id": "m2",
+          "home": 0,
+          "away": 0
+        },
+        {
+          "id": "m3",
+          "home": 4,
+          "away": 0
+        },
+        {
+          "id": "m4",
+          "home": 1,
+          "away": 0
+        },
+        {
+          "id": "m5",
+          "home": 2,
+          "away": 0
+        },
+        {
+          "id": "m6",
+          "home": 1,
+          "away": 1
+        },
+        {
+          "id": "m7",
+          "home": 2,
+          "away": 2
+        },
+        {
+          "id": "m8",
+          "home": 1,
+          "away": 2
+        },
+        {
+          "id": "m9",
+          "home": 0,
+          "away": 3
+        },
+        {
+          "id": "m10",
+          "home": 0,
+          "away": 3
+        }
+      ],
+      "groupQuestions": {
+        "gqA": "Sør-Korea",
+        "gqB": "Canada",
+        "gqC": "N",
+        "gqD": "USA",
+        "gqF": "Nederland",
+        "gqG": "Belgia",
+        "gqI": "Senegal",
+        "gqK": "N"
+      },
+      "norway": {
+        "score7plus": "N",
+        "concede4plus": "J",
+        "meetBrazil": "J",
+        "furthest": "",
+        "topScorer": ""
+      },
+      "knockout": {
+        "swedenAdvances": "J",
+        "europeanTeams": "8",
+        "hostsAdvance": "USA",
+        "quarterfinalists": [
+          "Frankrike",
+          "Marokko",
+          "Spania",
+          "USA",
+          "Brasil",
+          "England",
+          "Argentina",
+          "Portugal"
+        ]
+      },
+      "final": {
+        "team1": "Spania",
+        "team2": "England",
+        "score1": 1,
+        "score2": 1,
+        "champion": "Spania",
+        "topScorerCountry": "Frankrike"
+      }
+    },
+    {
+      "name": "Ådne",
+      "groupMatches": [
+        {
+          "id": "m1",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m2",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m3",
+          "home": 3,
+          "away": 0
+        },
+        {
+          "id": "m4",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m5",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m6",
+          "home": 3,
+          "away": 1
+        },
+        {
+          "id": "m7",
+          "home": 2,
+          "away": 1
+        },
+        {
+          "id": "m8",
+          "home": 1,
+          "away": 3
+        },
+        {
+          "id": "m9",
+          "home": 1,
+          "away": 3
+        },
+        {
+          "id": "m10",
+          "home": 2,
+          "away": 3
+        }
+      ],
+      "groupQuestions": {
+        "gqA": "Mexico",
+        "gqB": "Canada",
+        "gqC": "N",
+        "gqD": "USA",
+        "gqF": "Nederland",
+        "gqG": "Belgia",
+        "gqI": "Norge",
+        "gqK": "N"
+      },
+      "norway": {
+        "score7plus": "N",
+        "concede4plus": "J",
+        "meetBrazil": "N",
+        "furthest": "England",
+        "topScorer": "Haaland"
+      },
+      "knockout": {
+        "swedenAdvances": "N",
+        "europeanTeams": "10",
+        "hostsAdvance": "Mexico",
+        "quarterfinalists": [
+          "Spania",
+          "Frankrike",
+          "Nederland",
+          "Brasil",
+          "Argentina",
+          "England",
+          "Portugal",
+          "Tyskland"
+        ]
+      },
+      "final": {
+        "team1": "Spania",
+        "team2": "Frankrike",
+        "score1": 2,
+        "score2": 1,
+        "champion": "Spania",
+        "topScorerCountry": "Spania"
+      }
+    }
+  ]
+}
