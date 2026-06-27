@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm"
 import predictions from "./data/predictions.json"
 import { norwegianFromEnglish } from "./teams"
 import { isFinalResult } from "./match-time"
-import { db } from "./db"
+import { getDb } from "./db"
 import { matchResults, syncState } from "./db/schema"
 import type { MatchResult, MatchStatus, ResultsPayload, PredictionData } from "./types"
 
@@ -85,6 +85,7 @@ export async function getResults(): Promise<ResultsPayload> {
 // --- Postgres cache -------------------------------------------------------
 
 async function loadFromDb(now: number): Promise<ResultsPayload | null> {
+  const db = getDb()
   const [state] = await db.select().from(syncState).where(eq(syncState.id, SYNC_ID))
   if (!state) return null
 
@@ -123,6 +124,7 @@ async function storeResults(
   now: number,
 ): Promise<void> {
   const fetchedAt = new Date(now)
+  const db = getDb()
   await db.transaction(async (tx) => {
     for (const m of DATA.matches) {
       const r = results[m.id]
