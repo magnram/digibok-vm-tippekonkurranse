@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { GroupQuestion, Match, Contestant, MatchResult, ScoreBreakdown } from "@/lib/types"
+import type { GroupQuestion, Match, Contestant, MatchPhase, MatchResult, ScoreBreakdown } from "@/lib/types"
 import { StandingsTable } from "@/components/standings-table"
 import { MatchesList } from "@/components/matches-list"
 import { ContestantDetail } from "@/components/contestant-detail"
@@ -13,12 +13,14 @@ export function ContestApp({
   contestants,
   groupQuestions,
   results,
+  phases,
 }: {
   standings: ScoreBreakdown[]
   matches: Match[]
   contestants: Contestant[]
   groupQuestions: GroupQuestion[]
   results: Record<string, MatchResult>
+  phases: Record<string, MatchPhase>
 }) {
   const [tab, setTab] = useState("standings")
   const [selected, setSelected] = useState<string | null>(null)
@@ -46,7 +48,7 @@ export function ContestApp({
       </TabsContent>
 
       <TabsContent value="matches" className="mt-5">
-        <MatchesList matches={matches} results={results} contestants={contestants} />
+        <MatchesList matches={matches} results={results} contestants={contestants} phases={phases} />
       </TabsContent>
 
       <TabsContent value="contestant" className="mt-5">
@@ -57,6 +59,7 @@ export function ContestApp({
             matches={matches}
             groupQuestions={groupQuestions}
             results={results}
+            phases={phases}
             rank={standings.findIndex((s) => s.name === selected) + 1}
             onBack={() => setTab("standings")}
           />

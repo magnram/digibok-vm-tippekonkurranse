@@ -14,13 +14,13 @@ export function scoreContestant(c: Contestant, results: Record<string, MatchResu
 
   const matches = c.groupMatches.map((pm) => {
     const r = results[pm.id]
-    const settled = !!r && r.status === "FINISHED"
+    const settled = !!r && r.final && r.home != null && r.away != null
     let outcomeHit = false
     let exactHit = false
     let points = 0
 
     if (settled && pm.home != null && pm.away != null) {
-      if (outcome(pm.home, pm.away) === outcome(r.home, r.away)) {
+      if (outcome(pm.home, pm.away) === outcome(r.home!, r.away!)) {
         outcomeHit = true
         outcomePoints += 1
         points += 1
@@ -35,7 +35,7 @@ export function scoreContestant(c: Contestant, results: Record<string, MatchResu
     return {
       id: pm.id,
       predicted: { home: pm.home, away: pm.away },
-      actual: settled ? { home: r.home, away: r.away } : null,
+      actual: settled ? { home: r.home!, away: r.away! } : null,
       outcomeHit,
       exactHit,
       points,

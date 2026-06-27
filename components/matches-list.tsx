@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { ChevronDown } from "lucide-react"
 import { Flag } from "@/components/flag"
-import type { Match, MatchResult, Contestant } from "@/lib/types"
+import type { Match, MatchPhase, MatchResult, Contestant } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 function outcome(h: number, a: number) {
@@ -12,25 +12,25 @@ function outcome(h: number, a: number) {
   return "U"
 }
 
-function StatusBadge({ result }: { result?: MatchResult }) {
-  if (!result) {
-    return (
-      <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-        Ikke spilt
-      </span>
-    )
-  }
-  if (result.status === "FINISHED") {
+function StatusBadge({ phase }: { phase: MatchPhase }) {
+  if (phase === "finished") {
     return (
       <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
         Ferdig
       </span>
     )
   }
-  if (result.status === "IN_PLAY" || result.status === "PAUSED") {
+  if (phase === "live") {
     return (
       <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent-foreground">
         Spilles nå
+      </span>
+    )
+  }
+  if (phase === "awaiting") {
+    return (
+      <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">
+        Henter resultat
       </span>
     )
   }
@@ -45,10 +45,12 @@ export function MatchesList({
   matches,
   results,
   contestants,
+  phases,
 }: {
   matches: Match[]
   results: Record<string, MatchResult>
   contestants: Contestant[]
+  phases: Record<string, MatchPhase>
 }) {
   return (
     <section aria-label="Kamper">
@@ -60,7 +62,13 @@ export function MatchesList({
       </div>
       <div className="flex flex-col gap-2">
         {matches.map((m) => (
-          <MatchCard key={m.id} match={m} result={results[m.id]} contestants={contestants} />
+          <MatchCard
+            key={m.id}
+            match={m}
+            result={results[m.id]}
+            phase={phases[m.id] ?? "upcoming"}
+            contestants={contestants}
+          />
         ))}
       </div>
     </section>
@@ -70,15 +78,17 @@ export function MatchesList({
 function MatchCard({
   match,
   result,
+  phase,
   contestants,
 }: {
   match: Match
   result?: MatchResult
+  phase: MatchPhase
   contestants: Contestant[]
 }) {
   const [open, setOpen] = useState(false)
-  const settled = result?.status === "FINISHED"
-  const actualOutcome = settled ? outcome(result!.home, result!.away) : null
+  const settled = phase === "finished" && result?.home != null && result?.away != null
+  const actualOutcome = settled ? outcome(result!.home!, result!.away!) : null
 
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
@@ -106,7 +116,7 @@ function MatchCard({
                 settled ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
               )}
             >
-              {settled ? `${result!.home} – ${result!.away}` : "–"}
+              {settled ? `${result!.home} – ${result!.away}` : phase === "live" ? "live" : "–"}
             </span>
             <span className="flex min-w-0 flex-1 items-center gap-2 text-sm font-medium">
               <Flag team={match.away} className="h-3.5 w-5" />
@@ -114,7 +124,7 @@ function MatchCard({
             </span>
           </div>
           <div className="mt-1.5 flex items-center justify-center gap-2">
-            <StatusBadge result={result} />
+            <StatusBadge phase={phase} />
           </div>
         </div>
 

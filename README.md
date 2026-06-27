@@ -1,33 +1,60 @@
 # kartverket-vm-gjettekonkurranse
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
+Stillingen i Kartverkets VM-tippekonkurranse for fotball-VM 2026 – en [Next.js](https://nextjs.org)-app som henter resultater fra [football-data.org](https://www.football-data.org) og mellomlagrer dem i Postgres.
 
-## Built with v0
+## Kom i gang
 
-This repository is linked to a [v0](https://v0.app) project. You can continue developing by visiting the link below -- start new chats to make changes, and v0 will push commits directly to this repo. Every merge to `main` will automatically deploy.
+### 1. Miljøvariabler
 
-[Continue working on v0 →](https://v0.app/chat/projects/prj_gIDeTTTlwnI5XOOWFOVVcE0bqvEv)
+Hent et API-nøkkel fra [football-data.org](https://www.football-data.org/client/register) og kopier miljøfila:
 
-## Getting Started
+```bash
+cp .env.template .env
+# fyll inn FOOTBALL_DATA_API_KEY i .env
+```
 
-First, run the development server:
+`DATABASE_URL` er allerede satt til å peke på den lokale Postgres-databasen under.
+
+### 2. Database (Postgres via Docker)
+
+Resultater lagres i Postgres slik at football-data.org-API-et bare kalles når dataene er eldre enn ~5 minutter – ikke på hvert sidevisning.
+
+```bash
+npm run db:up      # starter Postgres (docker compose, port 5432)
+npm run db:push    # oppretter tabellene (drizzle-kit)
+```
+
+Nyttig:
+
+```bash
+npm run db:studio  # nettleser-UI for å se på dataene
+npm run db:down    # stopper databasen (dataene beholdes i volumet)
+```
+
+> Bruker du en egen Postgres (f.eks. Homebrew `postgresql@18`) i stedet for Docker, hopp over `db:up` og pek `DATABASE_URL` mot den. Kjør fortsatt `npm run db:push`.
+
+### 3. Kjør appen
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Åpne [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Første sidevisning henter fra API-et og fyller cachen; påfølgende visninger leses fra Postgres til cachen blir foreldet. Uten et API-nøkkel kjører appen fortsatt og viser «Venter på resultater». Er databasen utilgjengelig, faller appen tilbake til å kalle API-et direkte.
 
-## Learn More
+## Hvordan data flyter
 
-To learn more, take a look at the following resources:
+```
+football-data.org  ──(maks 1 kall / 5 min)──▶  Postgres (match_results, sync_state)  ──▶  siden
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [v0 Documentation](https://v0.app/docs) - learn about v0 and how to use it.
+- `lib/results.ts` – lese/skrive cache + on-demand-oppdatering.
+- `lib/db/schema.ts` – Drizzle-skjema for `match_results` og `sync_state`.
+- `lib/match-time.ts` – utleder om en kamp er ferdigspilt ut fra kampstart og status.
+
+## Lær mer
+
+- [Next.js-dokumentasjon](https://nextjs.org/docs)
+- [Drizzle ORM](https://orm.drizzle.team/docs/overview)
+- [football-data.org API](https://www.football-data.org/documentation/quickstart)

@@ -32,7 +32,7 @@ export const TEAMS: Record<string, { code: string; en: string[] }> = {
   Spania: { code: "es", en: ["Spain"] },
   "Saudi-Arabia": { code: "sa", en: ["Saudi Arabia"] },
   Uruguay: { code: "uy", en: ["Uruguay"] },
-  "Kapp Verde": { code: "cv", en: ["Cape Verde", "Cabo Verde"] },
+  "Kapp Verde": { code: "cv", en: ["Cape Verde", "Cape Verde Islands", "Cabo Verde"] },
   Frankrike: { code: "fr", en: ["France"] },
   Norge: { code: "no", en: ["Norway"] },
   Irak: { code: "iq", en: ["Iraq"] },

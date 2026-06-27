@@ -7,6 +7,7 @@ function formatTime(iso: string) {
       month: "short",
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: "Europe/Oslo",
     }).format(new Date(iso))
   } catch {
     return ""

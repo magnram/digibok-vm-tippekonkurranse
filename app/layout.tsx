@@ -12,7 +12,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'VM-tipping 2026 | Kartverket',
   description: 'Stillingen i Kartverkets VM-tippekonkurranse for fotball-VM 2026, oppdatert med live resultater.',
-  generator: 'v0.app',
   icons: {
     icon: [
       {

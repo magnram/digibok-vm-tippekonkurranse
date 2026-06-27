@@ -2,7 +2,7 @@
 
 import { ArrowLeft, X } from "lucide-react"
 import { Flag } from "@/components/flag"
-import type { Contestant, GroupQuestion, Match, MatchResult, ScoreBreakdown } from "@/lib/types"
+import type { Contestant, GroupQuestion, Match, MatchPhase, MatchResult, ScoreBreakdown } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 function JN({ value }: { value: string }) {
@@ -35,6 +35,7 @@ export function ContestantDetail({
   matches,
   groupQuestions,
   results,
+  phases,
   rank,
   onBack,
 }: {
@@ -43,6 +44,7 @@ export function ContestantDetail({
   matches: Match[]
   groupQuestions: GroupQuestion[]
   results: Record<string, MatchResult>
+  phases: Record<string, MatchPhase>
   rank: number
   onBack: () => void
 }) {
@@ -91,7 +93,8 @@ export function ContestantDetail({
             {matches.map((m) => {
               const pm = c.groupMatches.find((g) => g.id === m.id)
               const r = results[m.id]
-              const settled = r?.status === "FINISHED"
+              const phase = phases[m.id] ?? "upcoming"
+              const settled = phase === "finished" && r?.home != null && r?.away != null
               const mb = score.matches.find((x) => x.id === m.id)
               return (
                 <div
@@ -133,8 +136,14 @@ export function ContestantDetail({
                           <X className="size-3.5 text-muted-foreground" />
                         )}
                       </span>
+                    ) : phase === "live" ? (
+                      <span className="text-[10px] font-medium text-accent-foreground">spilles nå</span>
+                    ) : phase === "awaiting" ? (
+                      <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400">
+                        henter resultat
+                      </span>
                     ) : (
-                      <span className="text-[10px] text-muted-foreground">venter</span>
+                      <span className="text-[10px] text-muted-foreground">ikke spilt</span>
                     )}
                   </span>
                 </div>
