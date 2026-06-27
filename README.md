@@ -23,8 +23,10 @@ Drizzle ORM mot Postgres.
   Norge, sluttspill, finale): hva som ble tippet, fasiten, og poengene linje for linje.
 - **Stillingsutvikling** – en graf som viser poengene til alle deltakere gjennom hele
   mesterskapet, med milepæler for gruppespill, åttedelsfinaler og finale.
-- **Live resultater** fra football-data.org, mellomlagret i Postgres slik at API-et kun
-  kalles når dataene er eldre enn ~5 minutter – og aldri mer når finalen er spilt.
+- **Live resultater** fra football-data.org, mellomlagret i Postgres. API-et kalles bare
+  når en kamp faktisk har startet siden forrige henting (og tidligst hvert ~5. minutt) –
+  ferdigspilte resultater hentes aldri på nytt, og når finalen er spilt fryses
+  snapshotet helt.
 - **Automatisk fasit**: svarnøkkelen utledes fra VM-dataene (tabeller, toppscorere,
   kampresultater) og kan overstyres manuelt via `lib/data/fasit.json`.
 - **Lys/mørk modus** og responsivt design (egen mobillayout).
@@ -85,7 +87,7 @@ for alltid, uten flere API-kall.
 
 ```
 football-data.org
-   │  (≤ 1 kall / 5 min, stopper helt når finalen er ferdig)
+   │  (kun når en kamp er i gang eller nyspilt; tidligst hvert 5. min; fryses etter finalen)
    ▼
 Postgres · api_cache (én rad: matches + standings + scorers som JSON)
    │

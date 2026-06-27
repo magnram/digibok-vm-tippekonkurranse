@@ -24,11 +24,31 @@ function isFrozen(matches: ApiMatch[]): boolean {
   return !!final && final.status === "FINISHED"
 }
 
+// Statuses where a fixture is done and its data can't change again.
+const SETTLED = new Set(["FINISHED", "AWARDED", "CANCELLED"])
+
+// Whether it's worth calling the API again. Only when a fixture has kicked off
+// since the snapshot was taken — some match is live, or has finished but isn't yet
+// recorded as settled in our snapshot. When nothing new has started since the last
+// fetch, every result, table and scorer is already cached, so we keep serving it
+// rather than re-downloading data that can't have moved. (We scan the whole WC
+// schedule, not just our 10 tracked matches: the derived fasit depends on group
+// tables, knockout progression and scorers across all of it.) With no schedule
+// cached yet, we always refetch.
+function shouldRefetch(matches: ApiMatch[], now: number): boolean {
+  if (matches.length === 0) return true
+  return matches.some((m) => {
+    if (SETTLED.has(m.status) || !m.utcDate) return false
+    return Date.parse(m.utcDate) <= now
+  })
+}
+
 // The single gateway to football-data.org. Memoized per request (React cache) so
 // every consumer in one render shares one result, and persisted in Postgres so the
-// API is only called when the stored snapshot is stale — and never again once the
-// snapshot is frozen. Degrades to a direct fetch if the DB is unavailable, and to
-// the last good snapshot if the API call fails.
+// API is only called when the stored snapshot is stale *and* a fixture has actually
+// kicked off since it was taken — never for data that can't have changed, and never
+// again once the snapshot is frozen. Degrades to a direct fetch if the DB is
+// unavailable, and to the last good snapshot if the API call fails.
 export const getWcData = cache(async (): Promise<WcData | null> => {
   const now = Date.now()
   try {
@@ -36,6 +56,10 @@ export const getWcData = cache(async (): Promise<WcData | null> => {
     if (cached) {
       if (cached.frozen) return cached
       if (now - Date.parse(cached.fetchedAt) < TTL_MS) return cached
+      // Past the refresh window — but skip the API entirely unless a fixture has
+      // kicked off since this snapshot. Finished results can't change, so when
+      // nothing new has started we keep serving the cache.
+      if (!shouldRefetch(cached.matches, now)) return cached
     }
     const fresh = await fetchAll(now)
     if (fresh) {
