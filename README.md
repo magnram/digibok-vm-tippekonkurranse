@@ -1,6 +1,6 @@
 # VM-tipping 2026 · DigiBok
 
-Live stilling i DigiBok-lagets tippekonkurranse for fotball-VM 2026 – arrangert av Knut.
+Live stilling i DigiBoks tippekonkurranse for fotball-VM 2026 – arrangert av Knut.
 Alle fylte ut hvert sitt excelark før avspark; appen henter resultater fra
 [football-data.org](https://www.football-data.org), regner ut poeng for hver deltaker
 og viser stillingen, detaljerte fasit-oppgjør og hvordan stillingen har utviklet seg
@@ -124,8 +124,20 @@ npm test           # enhetstester for fasit-utledning og kamptid (node --test vi
 
 Appen kjører på Vercel. `vercel.json` overstyrer build-kommandoen til `next build`.
 Sett `FOOTBALL_DATA_API_KEY` og `DATABASE_URL` (f.eks. Vercel Postgres eller Neon) som
-miljøvariabler i prosjektet, og kjør `npm run db:push` mot produksjonsdatabasen én gang
-for å opprette `api_cache`-tabellen.
+miljøvariabler i prosjektet.
+
+> **Skjemaendringer må pushes manuelt.** Vercel-bygget kjører kun `next build` – det
+> kjører *aldri* `db:push`. Etter hver endring i `lib/db/schema.ts` må du derfor kjøre
+> migreringen mot produksjonsdatabasen selv:
+>
+> ```bash
+> DATABASE_URL="<prod-url>" npm run db:push
+> ```
+>
+> Merk at `drizzle-kit push` kun legger til / endrer tabeller – tabeller du har *fjernet*
+> fra skjemaet blir liggende igjen og må droppes manuelt i databasen. Gjør du ikke dette,
+> kjører appen videre på et utdatert skjema (koden forventer `api_cache`, men prod kan
+> mangle den) og faller tilbake til å kalle API-et på hvert sidevisning.
 
 ## Lær mer
 
