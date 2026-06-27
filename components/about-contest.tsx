@@ -11,7 +11,7 @@ export function AboutContest() {
       </div>
       <div className="space-y-3 p-4 text-sm leading-relaxed text-muted-foreground">
         <p>
-          DigiBok-lagets egen tippekonkurranse for <span className="font-medium text-foreground">fotball-VM 2026</span>,
+          DigiBoks egen tippekonkurranse for <span className="font-medium text-foreground">fotball-VM 2026</span>,
           arrangert av <span className="font-medium text-foreground">Knut</span> - med noen «eksklusivt utvalgte
           eks-medlemmer» invitert på kopilista. Alle fylte ut hvert sitt excelark før avspark; her er stillingen, nå
           helt live.
