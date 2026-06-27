@@ -46,6 +46,35 @@ export type PredictionData = {
   contestants: Contestant[]
 }
 
+// The answer key (fasit) for everything that isn't a tracked group-match score.
+// Mirrors the non-match shape of a Contestant. Each field is left blank/null
+// until the real-world answer is known; scoring only awards points for decided
+// fields, so the organizer fills these in as the tournament unfolds.
+export type Fasit = {
+  groupQuestions: Record<string, string>
+  norway: {
+    score7plus: string
+    concede4plus: string
+    meetBrazil: string
+    furthest: string
+    topScorer: string
+  }
+  knockout: {
+    swedenAdvances: string
+    europeanTeams: string
+    hostsAdvance: string
+    quarterfinalists: string[]
+  }
+  final: {
+    team1: string
+    team2: string
+    score1: number | null
+    score2: number | null
+    champion: string
+    topScorerCountry: string
+  }
+}
+
 export type MatchStatus =
   | "FINISHED"
   | "AWARDED"
@@ -81,13 +110,43 @@ export type ResultsPayload = {
   note?: string
 }
 
+// One scored answer outside the group matches.
+//  - pending:  the fasit answer isn't decided yet (no points lost or gained)
+//  - correct:  full points
+//  - partial:  some but not all points (e.g. one final team, some QF teams)
+//  - wrong:    decided and missed
+export type AnswerStatus = "pending" | "correct" | "partial" | "wrong"
+
+export type AnswerLine = {
+  key: string
+  points: number // points awarded
+  max: number // maximum possible
+  status: AnswerStatus
+  correct: string | null // the fasit answer for display, null while pending
+  chips?: { value: string; hit: boolean }[] // per-item correctness (quarterfinalists)
+}
+
+// All non-match rounds, keyed by field so the UI can look up each line.
+export type BonusBreakdown = {
+  groupQuestions: Record<string, AnswerLine>
+  norway: Record<string, AnswerLine>
+  knockout: Record<string, AnswerLine>
+  final: Record<string, AnswerLine>
+}
+
 // Per-contestant computed score breakdown.
 export type ScoreBreakdown = {
   name: string
-  total: number
+  total: number // matchPoints + bonusPoints - points already locked in
   matchPoints: number
   outcomePoints: number
   exactPoints: number
+  bonusPoints: number // points from group questions, Norway, knockout and final
+  // The most this contestant can still reach: locked-in points plus everything
+  // still undecided (unplayed matches + pending questions). Shrinks as answers
+  // are settled wrong. `remainingPoints` is the still-in-play part (maxPoints - total).
+  maxPoints: number
+  remainingPoints: number
   matches: {
     id: string
     predicted: { home: number | null; away: number | null }
@@ -96,5 +155,10 @@ export type ScoreBreakdown = {
     exactHit: boolean
     points: number
     settled: boolean
+    open: boolean // not settled yet - its 2 points are still up for grabs
   }[]
+  bonus: BonusBreakdown
 }
+
+// The maximum points obtainable in the whole contest (a perfect card).
+export const MATCH_POINTS_EACH = 2

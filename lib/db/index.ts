@@ -41,3 +41,18 @@ export function getDb(): Db {
   }
   return db
 }
+
+// Postgres is an optional cache: when it's down the callers serve live data
+// directly. Log that as a single concise, actionable warning per scope rather than
+// dumping the full driver stack on every request (which React also surfaces as a
+// red Server Component error in dev).
+const warnedScopes = new Set<string>()
+export function warnDbUnavailable(scope: string, err: unknown): void {
+  if (warnedScopes.has(scope)) return
+  warnedScopes.add(scope)
+  const reason =
+    err instanceof Error && /DATABASE_URL/.test(err.message) ? "DATABASE_URL not set" : "Postgres unreachable"
+  console.warn(
+    `[${scope}] ${reason} – serving live data without cache. Run \`npm run db:up && npm run db:push\` to enable caching.`,
+  )
+}

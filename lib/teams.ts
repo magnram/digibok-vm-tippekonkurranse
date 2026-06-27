@@ -51,6 +51,28 @@ export const TEAMS: Record<string, { code: string; en: string[] }> = {
   Ghana: { code: "gh", en: ["Ghana"] },
 }
 
+// UEFA (European) members among the contest's teams, by Norwegian name. Used to
+// count "antall europeiske lag" reaching the round of 32 - the API doesn't expose
+// confederation, so we derive it from this static set.
+export const EUROPEAN_TEAMS = new Set<string>([
+  "Tsjekkia",
+  "Sveits",
+  "Skottland",
+  "Tyrkia",
+  "Tyskland",
+  "Nederland",
+  "Sverige",
+  "Belgia",
+  "Spania",
+  "Frankrike",
+  "Norge",
+  "Østerrike",
+  "Portugal",
+  "England",
+  "Kroatia",
+  "Bosnia-Herceg.",
+])
+
 export function flagUrl(noName: string): string | null {
   const t = TEAMS[noName]
   if (!t) return null

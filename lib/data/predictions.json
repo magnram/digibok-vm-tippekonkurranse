@@ -206,7 +206,7 @@
           "Brasil",
           "Argentina",
           "Tyskland",
-          "Marokka",
+          "Marokko",
           "Senegal"
         ]
       },
@@ -465,7 +465,7 @@
       ],
       "groupQuestions": {
         "gqA": "Mexico",
-        "gqB": "Bosnia",
+        "gqB": "Bosnia-Herceg.",
         "gqC": "J",
         "gqD": "Paraguay",
         "gqF": "Nederland",
@@ -572,7 +572,7 @@
         "score7plus": "N",
         "concede4plus": "J",
         "meetBrazil": "N",
-        "furthest": "",
+        "furthest": "Like langt",
         "topScorer": "Haaland"
       },
       "knockout": {
@@ -673,7 +673,7 @@
       "knockout": {
         "swedenAdvances": "N",
         "europeanTeams": "14",
-        "hostsAdvance": "Mexico, USA",
+        "hostsAdvance": "Mexico og USA",
         "quarterfinalists": [
           "Brasil",
           "England",
@@ -768,7 +768,7 @@
       "knockout": {
         "swedenAdvances": "J",
         "europeanTeams": "13",
-        "hostsAdvance": "USA, Mexico",
+        "hostsAdvance": "Mexico og USA",
         "quarterfinalists": [
           "Frankrike",
           "Nederland",
@@ -1053,7 +1053,7 @@
       "knockout": {
         "swedenAdvances": "J",
         "europeanTeams": "10",
-        "hostsAdvance": "USA, Mexico",
+        "hostsAdvance": "Mexico og USA",
         "quarterfinalists": [
           "Brasil",
           "Argentina",
@@ -1061,7 +1061,7 @@
           "England",
           "Portugal",
           "Nederland",
-          "Tyskalnd",
+          "Tyskland",
           "Spania"
         ]
       },
@@ -1130,7 +1130,7 @@
       ],
       "groupQuestions": {
         "gqA": "Mexico",
-        "gqB": "Bosnia",
+        "gqB": "Bosnia-Herceg.",
         "gqC": "N",
         "gqD": "Tyrkia",
         "gqF": "Nederland",
@@ -1224,7 +1224,7 @@
         }
       ],
       "groupQuestions": {
-        "gqA": "Sør Korea",
+        "gqA": "Sør-Korea",
         "gqB": "Bosnia-Herceg.",
         "gqC": "N",
         "gqD": "Australia",
@@ -1332,8 +1332,8 @@
         "score7plus": "N",
         "concede4plus": "J",
         "meetBrazil": "J",
-        "furthest": "",
-        "topScorer": ""
+        "furthest": "England",
+        "topScorer": "Sørloth"
       },
       "knockout": {
         "swedenAdvances": "J",

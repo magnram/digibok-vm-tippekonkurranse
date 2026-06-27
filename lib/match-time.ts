@@ -2,7 +2,7 @@ import type { Match, MatchPhase, MatchResult } from "./types"
 
 // The contest spreadsheet lists kickoff times in Norwegian local time. The whole
 // 2026 World Cup (11 June – 19 July) falls inside daylight-saving time, so Oslo
-// is UTC+2 (CEST) for every fixture — no DST transition to worry about.
+// is UTC+2 (CEST) for every fixture - no DST transition to worry about.
 const OSLO_UTC_OFFSET_HOURS = 2
 
 // A football match is over roughly two hours after kickoff (90 min + half-time +
@@ -30,7 +30,7 @@ const FINAL_STATUSES = new Set(["FINISHED", "AWARDED"])
 
 // Whether a result can be treated as the final score for scoring.
 // Either the feed explicitly says so, or the match has a score and its kickoff is
-// far enough in the past that it must be over — this guards against the feed
+// far enough in the past that it must be over - this guards against the feed
 // leaving a played match stuck on a live/scheduled status.
 export function isFinalResult(match: Match, result: MatchResult | undefined, now: number): boolean {
   if (!result || result.home == null || result.away == null) return false
@@ -41,7 +41,7 @@ export function isFinalResult(match: Match, result: MatchResult | undefined, now
 
 // Derives the display phase for a fixture from its result and scheduled kickoff.
 // `awaiting` means the match should have been played by now but we don't have a
-// final result yet — distinct from `upcoming`, which means it hasn't kicked off.
+// final result yet - distinct from `upcoming`, which means it hasn't kicked off.
 export function matchPhase(match: Match, result: MatchResult | undefined, now: number): MatchPhase {
   if (result?.final) return "finished"
   if (result?.status === "IN_PLAY" || result?.status === "PAUSED") return "live"

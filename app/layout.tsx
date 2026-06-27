@@ -10,24 +10,12 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'VM-tipping 2026 | Kartverket',
-  description: 'Stillingen i Kartverkets VM-tippekonkurranse for fotball-VM 2026, oppdatert med live resultater.',
+  title: 'VM-tipping 2026 | DigiBok',
+  description:
+    'Stillingen i DigiBok-lagets VM-tippekonkurranse for fotball-VM 2026, arrangert av Knut og oppdatert med live resultater.',
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: [{ url: '/img.png', type: 'image/png' }],
+    apple: '/img.png',
   },
 }
 

@@ -1,11 +1,23 @@
 "use client"
 
-import { useState } from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { GroupQuestion, Match, Contestant, MatchPhase, MatchResult, ScoreBreakdown } from "@/lib/types"
+import { useCallback } from "react"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import type {
+  GroupQuestion,
+  Match,
+  Contestant,
+  MatchPhase,
+  MatchResult,
+  ScoreBreakdown,
+} from "@/lib/types"
+import type { StandingsHistoryData } from "@/lib/history"
 import { StandingsTable } from "@/components/standings-table"
-import { MatchesList } from "@/components/matches-list"
 import { ContestantDetail } from "@/components/contestant-detail"
+
+// Which contestant is open is stored in the URL (?deltaker=Navn) so the browser
+// back/forward buttons navigate between the standings and a player, and a player
+// view is directly shareable/bookmarkable.
+const PARAM = "deltaker"
 
 export function ContestApp({
   standings,
@@ -14,6 +26,7 @@ export function ContestApp({
   groupQuestions,
   results,
   phases,
+  history,
 }: {
   standings: ScoreBreakdown[]
   matches: Match[]
@@ -21,50 +34,47 @@ export function ContestApp({
   groupQuestions: GroupQuestion[]
   results: Record<string, MatchResult>
   phases: Record<string, MatchPhase>
+  history: StandingsHistoryData
 }) {
-  const [tab, setTab] = useState("standings")
-  const [selected, setSelected] = useState<string | null>(null)
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
 
-  function openContestant(name: string) {
-    setSelected(name)
-    setTab("contestant")
+  const selected = searchParams.get(PARAM)
+
+  const select = useCallback(
+    (name: string) => {
+      const sp = new URLSearchParams(searchParams.toString())
+      sp.set(PARAM, name)
+      router.push(`${pathname}?${sp.toString()}`)
+    },
+    [router, pathname, searchParams],
+  )
+
+  const back = useCallback(() => {
+    router.push(pathname)
+  }, [router, pathname])
+
+  const selectedContestant = selected ? contestants.find((c) => c.name === selected) ?? null : null
+  const selectedScore = selected ? standings.find((s) => s.name === selected) ?? null : null
+
+  if (selectedContestant && selectedScore) {
+    return (
+      <ContestantDetail
+        contestant={selectedContestant}
+        score={selectedScore}
+        contestants={contestants}
+        standings={standings}
+        matches={matches}
+        groupQuestions={groupQuestions}
+        results={results}
+        phases={phases}
+        history={history}
+        rank={standings.findIndex((s) => s.name === selected) + 1}
+        onBack={back}
+      />
+    )
   }
 
-  const selectedContestant = contestants.find((c) => c.name === selected) ?? null
-  const selectedScore = standings.find((s) => s.name === selected) ?? null
-
-  return (
-    <Tabs value={tab} onValueChange={setTab} className="w-full">
-      <TabsList className="grid w-full grid-cols-3">
-        <TabsTrigger value="standings">Stilling</TabsTrigger>
-        <TabsTrigger value="matches">Kamper</TabsTrigger>
-        <TabsTrigger value="contestant" disabled={!selectedContestant}>
-          Deltaker
-        </TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="standings" className="mt-5">
-        <StandingsTable standings={standings} onSelect={openContestant} />
-      </TabsContent>
-
-      <TabsContent value="matches" className="mt-5">
-        <MatchesList matches={matches} results={results} contestants={contestants} phases={phases} />
-      </TabsContent>
-
-      <TabsContent value="contestant" className="mt-5">
-        {selectedContestant && selectedScore ? (
-          <ContestantDetail
-            contestant={selectedContestant}
-            score={selectedScore}
-            matches={matches}
-            groupQuestions={groupQuestions}
-            results={results}
-            phases={phases}
-            rank={standings.findIndex((s) => s.name === selected) + 1}
-            onBack={() => setTab("standings")}
-          />
-        ) : null}
-      </TabsContent>
-    </Tabs>
-  )
+  return <StandingsTable standings={standings} history={history} onSelect={select} />
 }

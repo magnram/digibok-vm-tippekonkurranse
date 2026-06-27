@@ -1,26 +1,16 @@
-import { pgTable, text, integer, boolean, timestamp } from "drizzle-orm/pg-core"
+import { pgTable, text, boolean, timestamp } from "drizzle-orm/pg-core"
 
-// One row per tracked group-stage fixture (m1..m10). We store the raw score and
-// status from football-data.org; whether a match counts as "final" is derived at
-// read time from the kickoff and current time (see lib/match-time.ts), so it is
-// intentionally NOT persisted here.
-export const matchResults = pgTable("match_results", {
-  id: text("id").primaryKey(), // fixture id, e.g. "m1"
-  home: integer("home"), // full-time score, null until known
-  away: integer("away"),
-  status: text("status").notNull(), // football-data.org status (FINISHED, IN_PLAY, ...)
-  utcDate: timestamp("utc_date", { withTimezone: true }), // authoritative kickoff
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-})
-
-// Single-row bookkeeping table tracking the last successful API sync. Drives the
-// staleness check (TTL) and feeds the "Oppdatert" timestamp / status note.
-export const syncState = pgTable("sync_state", {
-  id: text("id").primaryKey(), // always "results"
+// Single-row cache of the raw football-data.org responses for the WC competition
+// (matches + standings + scorers), stored verbatim as JSON. Everything the app
+// shows — match results, the answer key, and the history-graph timing — is derived
+// from this snapshot in memory, so we call the API at most once per refresh window,
+// shared across all consumers. Once the final is played the snapshot is `frozen`
+// and served from Postgres forever: no further API calls, no rate-limit risk.
+export const apiCache = pgTable("api_cache", {
+  id: text("id").primaryKey(), // always "wc"
+  payload: text("payload").notNull(), // JSON: { matches, standings, scorers }
+  frozen: boolean("frozen").notNull().default(false),
   fetchedAt: timestamp("fetched_at", { withTimezone: true }).notNull(),
-  source: text("source").notNull(), // "api" | "none"
-  note: text("note"),
 })
 
-export type MatchResultRow = typeof matchResults.$inferSelect
-export type SyncStateRow = typeof syncState.$inferSelect
+export type ApiCacheRow = typeof apiCache.$inferSelect

@@ -1,0 +1,33 @@
+{
+  "groupQuestions": {
+    "gqA": "",
+    "gqB": "",
+    "gqC": "",
+    "gqD": "",
+    "gqF": "",
+    "gqG": "",
+    "gqI": "",
+    "gqK": ""
+  },
+  "norway": {
+    "score7plus": "",
+    "concede4plus": "",
+    "meetBrazil": "",
+    "furthest": "",
+    "topScorer": ""
+  },
+  "knockout": {
+    "swedenAdvances": "",
+    "europeanTeams": "",
+    "hostsAdvance": "",
+    "quarterfinalists": []
+  },
+  "final": {
+    "team1": "",
+    "team2": "",
+    "score1": null,
+    "score2": null,
+    "champion": "",
+    "topScorerCountry": ""
+  }
+}

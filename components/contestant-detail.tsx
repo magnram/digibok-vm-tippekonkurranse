@@ -1,29 +1,203 @@
 "use client"
 
-import { ArrowLeft, X } from "lucide-react"
+import { useState } from "react"
+import { ArrowLeft, ChevronDown, Check, X, Sparkles, LayoutGrid, Swords, Medal } from "lucide-react"
 import { Flag } from "@/components/flag"
-import type { Contestant, GroupQuestion, Match, MatchPhase, MatchResult, ScoreBreakdown } from "@/lib/types"
+import { StandingsHistory } from "@/components/standings-history"
+import type { StandingsHistoryData } from "@/lib/history"
+import { perfectTotal } from "@/lib/scoring"
+import type {
+  AnswerLine,
+  AnswerStatus,
+  Contestant,
+  GroupQuestion,
+  Match,
+  MatchPhase,
+  MatchResult,
+  ScoreBreakdown,
+} from "@/lib/types"
 import { cn } from "@/lib/utils"
 
-function JN({ value }: { value: string }) {
-  const v = (value || "").toUpperCase()
-  const label = v === "J" ? "Ja" : v === "N" ? "Nei" : value || "—"
-  return <span className="font-medium text-foreground">{label}</span>
+type BonusGroup = "groupQuestions" | "norway" | "knockout" | "final"
+
+// One contestant's answer to a single question, with how it scored.
+type Guess = {
+  name: string
+  value: string
+  points: number | null // null while the question is still pending
+  status: AnswerStatus | null // null = not yet decided for this contestant
+  selected: boolean
 }
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
+function jn(value: string): string {
+  const v = (value || "").toUpperCase()
+  if (v === "J") return "Ja"
+  if (v === "N") return "Nei"
+  return value || "-"
+}
+
+// Compact status pill: open (still winnable), earned, or lost.
+function PointsBadge({ line }: { line?: AnswerLine }) {
+  if (!line || line.status === "pending") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full border border-dashed border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+        +{line?.max ?? 0} mulig
+      </span>
+    )
+  }
+  if (line.points > 0) {
+    return (
+      <span
+        className={cn(
+          "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
+          line.status === "correct" ? "bg-accent text-accent-foreground" : "bg-primary/15 text-primary",
+        )}
+      >
+        {line.status === "correct" ? <Check className="size-3" /> : null}+{line.points}
+      </span>
+    )
+  }
   return (
-    <div className="flex items-start justify-between gap-3 py-2">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="text-right text-sm">{children}</span>
+    <span className="inline-flex items-center gap-0.5 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+      <X className="size-3" />0
+    </span>
+  )
+}
+
+function GuessCell({ g }: { g: Guess }) {
+  return (
+    <div
+      className={cn(
+        "flex items-start justify-between gap-2 rounded-lg border px-2.5 py-1.5 text-sm",
+        g.status === "correct"
+          ? "border-accent/50 bg-accent/15"
+          : g.status === "partial"
+            ? "border-primary/30 bg-primary/5"
+            : "border-transparent bg-card",
+        g.selected && "ring-1 ring-primary/50",
+      )}
+    >
+      <span className="min-w-0 max-w-[45%] shrink-0 truncate text-foreground">{g.name}</span>
+      <span className="flex min-w-0 flex-1 items-start justify-end gap-2">
+        <span className="break-words text-right font-medium text-foreground">{g.value}</span>
+        {g.points != null ? (
+          <span
+            className={cn(
+              "w-8 shrink-0 rounded-md px-1 py-0.5 text-center text-[11px] font-semibold tabular-nums",
+              g.status === "correct"
+                ? "bg-accent text-accent-foreground"
+                : g.status === "partial"
+                  ? "bg-primary/15 text-primary"
+                  : "bg-muted text-muted-foreground",
+            )}
+          >
+            {g.points}p
+          </span>
+        ) : null}
+      </span>
     </div>
   )
 }
 
-function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
+function GuessPanel({ guesses, correct }: { guesses: Guess[]; correct: string | null }) {
+  return (
+    <div className="mb-2 mt-1 rounded-lg bg-secondary/30 p-2">
+      <p className="mb-2 px-1 text-[11px] text-muted-foreground">
+        {correct ? (
+          <>
+            Fasit: <span className="font-medium text-foreground">{correct}</span>
+          </>
+        ) : (
+          "Ikke avgjort ennå"
+        )}
+      </p>
+      <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+        {guesses.map((g) => (
+          <GuessCell key={g.name} g={g} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// A question row that expands to reveal every contestant's answer.
+function ExpandableRow({
+  label,
+  line,
+  correct,
+  guesses,
+  children,
+}: {
+  label: string
+  line?: AnswerLine
+  correct: string | null
+  guesses: Guess[]
+  children: React.ReactNode
+}) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-start justify-between gap-3 py-2 text-left"
+      >
+        <span className="text-sm text-muted-foreground">{label}</span>
+        <span className="flex shrink-0 items-center gap-1.5 text-right text-sm">
+          {children}
+          <PointsBadge line={line} />
+          <ChevronDown
+            className={cn("size-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")}
+          />
+        </span>
+      </button>
+      {open ? <GuessPanel guesses={guesses} correct={correct} /> : null}
+    </div>
+  )
+}
+
+function SectionCard({
+  title,
+  icon,
+  lines,
+  children,
+}: {
+  title: string
+  icon?: React.ReactNode
+  lines?: AnswerLine[]
+  children: React.ReactNode
+}) {
+  const earned = lines ? lines.reduce((s, l) => s + l.points, 0) : null
+  const max = lines ? lines.reduce((s, l) => s + l.max, 0) : null
+  const remaining = lines
+    ? lines.filter((l) => l.status === "pending").reduce((s, l) => s + l.max, 0)
+    : 0
+  const pct = max ? Math.round((earned! / max) * 100) : 0
+  const ceilPct = max ? Math.round(((earned! + remaining) / max) * 100) : 0
   return (
     <div className="rounded-xl border border-border bg-card p-4">
-      <h3 className="mb-2 text-sm font-semibold text-foreground">{title}</h3>
+      <div className="mb-1 flex items-baseline justify-between gap-2">
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          {icon ? <span className="text-muted-foreground">{icon}</span> : null}
+          {title}
+        </h3>
+        {earned != null ? (
+          <span className="flex shrink-0 items-baseline gap-1.5 text-xs tabular-nums">
+            <span className="font-semibold text-foreground">
+              {earned} / {max}
+            </span>
+            {remaining > 0 ? <span className="font-medium text-primary/70">+{remaining} mulig</span> : null}
+          </span>
+        ) : null}
+      </div>
+      {earned != null && max ? (
+        <div className="mb-2.5 mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+          <div className="relative h-full w-full">
+            <div className="bar-grow absolute inset-y-0 left-0 rounded-full bg-primary/25" style={{ ["--bar-w" as string]: `${ceilPct}%` }} />
+            <div className="bar-grow absolute inset-y-0 left-0 rounded-full bg-primary" style={{ ["--bar-w" as string]: `${pct}%` }} />
+          </div>
+        </div>
+      ) : null}
       <div className="divide-y divide-border">{children}</div>
     </div>
   )
@@ -32,23 +206,66 @@ function SectionCard({ title, children }: { title: string; children: React.React
 export function ContestantDetail({
   contestant,
   score,
+  contestants,
+  standings,
   matches,
   groupQuestions,
   results,
   phases,
+  history,
   rank,
   onBack,
 }: {
   contestant: Contestant
   score: ScoreBreakdown
+  contestants: Contestant[]
+  standings: ScoreBreakdown[]
   matches: Match[]
   groupQuestions: GroupQuestion[]
   results: Record<string, MatchResult>
   phases: Record<string, MatchPhase>
+  history: StandingsHistoryData
   rank: number
   onBack: () => void
 }) {
   const c = contestant
+  const b = score.bonus
+  const matchMax = score.matches.length * 2
+  const perfect = perfectTotal(score)
+  const earnedPct = perfect ? (score.total / perfect) * 100 : 0
+  const ceilPct = perfect ? (score.maxPoints / perfect) * 100 : 0
+  const rankIcon = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null
+
+  // Look up every contestant in standings order (best first) with its breakdown.
+  const everyone = standings
+    .map((bd) => ({ bd, person: contestants.find((x) => x.name === bd.name) }))
+    .filter((e): e is { bd: ScoreBreakdown; person: Contestant } => !!e.person)
+
+  // Everyone's predicted scoreline for one group match.
+  function matchGuesses(matchId: string): Guess[] {
+    return everyone.map(({ bd, person }) => {
+      const pm = person.groupMatches.find((g) => g.id === matchId)
+      const value = pm && pm.home != null && pm.away != null ? `${pm.home}–${pm.away}` : "-"
+      const mb = bd.matches.find((x) => x.id === matchId)
+      let points: number | null = null
+      let status: AnswerStatus | null = null
+      if (mb?.settled) {
+        points = mb.points
+        status = mb.exactHit ? "correct" : mb.outcomeHit ? "partial" : "wrong"
+      }
+      return { name: person.name, value, points, status, selected: person.name === c.name }
+    })
+  }
+
+  // Everyone's answer for one bonus question (group questions / Norway / knockout / final).
+  function bonusGuesses(group: BonusGroup, key: string, extract: (p: Contestant) => string): Guess[] {
+    return everyone.map(({ bd, person }) => {
+      const line = bd.bonus[group][key]
+      const status = line?.status ?? null
+      const points = line && line.status !== "pending" ? line.points : null
+      return { name: person.name, value: extract(person) || "-", points, status, selected: person.name === c.name }
+    })
+  }
 
   return (
     <section aria-label={`Tips for ${c.name}`}>
@@ -62,34 +279,80 @@ export function ContestantDetail({
       </button>
 
       {/* Summary card */}
-      <div className="mb-4 flex items-center justify-between gap-4 rounded-xl border border-border bg-primary p-4 text-primary-foreground">
-        <div className="min-w-0">
-          <p className="text-xs uppercase tracking-wide text-primary-foreground/70">
-            Plassering #{rank}
-          </p>
-          <h2 className="truncate text-xl font-bold">{c.name}</h2>
-        </div>
-        <div className="flex shrink-0 gap-4 text-center">
-          <div>
-            <div className="text-2xl font-bold tabular-nums">{score.total}</div>
-            <div className="text-[10px] uppercase tracking-wide text-primary-foreground/70">
-              poeng
+      <div className="mb-4 overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary to-sky-700 p-4 text-primary-foreground shadow-md">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-primary-foreground/70">
+              {rankIcon ? <span aria-hidden="true">{rankIcon}</span> : null}
+              Plassering #{rank}
+            </p>
+            <h2 className="mt-0.5 truncate text-2xl font-extrabold tracking-tight">{c.name}</h2>
+            <p className="mt-1 text-xs text-primary-foreground/75">
+              {score.matchPoints} fra kamper · {score.bonusPoints} fra spørsmål
+            </p>
+          </div>
+          <div className="flex shrink-0 gap-4 text-center">
+            <div>
+              <div className="text-3xl font-extrabold tabular-nums leading-none">{score.total}</div>
+              <div className="mt-1 text-[10px] uppercase tracking-wide text-primary-foreground/70">
+                av {perfect} p
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center gap-1 text-3xl font-extrabold tabular-nums leading-none">
+                {score.exactPoints}
+                <Sparkles className="size-4 text-accent" aria-hidden="true" />
+              </div>
+              <div className="mt-1 text-[10px] uppercase tracking-wide text-primary-foreground/70">blink</div>
             </div>
           </div>
-          <div>
-            <div className="text-2xl font-bold tabular-nums">{score.exactPoints}</div>
-            <div className="text-[10px] uppercase tracking-wide text-primary-foreground/70">
-              blink
-            </div>
+        </div>
+
+        {/* Earned vs. still-possible toward a perfect card. */}
+        <div className="mt-3.5">
+          <div className="relative h-2 w-full overflow-hidden rounded-full bg-black/20">
+            <div className="bar-grow absolute inset-y-0 left-0 rounded-full bg-white/35" style={{ ["--bar-w" as string]: `${ceilPct}%` }} />
+            <div className="bar-grow absolute inset-y-0 left-0 rounded-full bg-accent" style={{ ["--bar-w" as string]: `${earnedPct}%` }} />
+          </div>
+          <div className="mt-1.5 flex justify-between text-[11px] font-medium text-primary-foreground/80">
+            <span>{score.total} sikret</span>
+            <span>{score.remainingPoints > 0 ? `tak ${score.maxPoints} · +${score.remainingPoints} mulig` : "alt avgjort"}</span>
           </div>
         </div>
       </div>
 
+      {/* This contestant's points over time, highlighted against the field. */}
+      <div className="mb-4">
+        <StandingsHistory
+          series={history.series}
+          start={history.start}
+          end={history.end}
+          now={history.now}
+          focusName={c.name}
+        />
+      </div>
+
+      <p className="mb-3 px-1 text-xs text-muted-foreground">Trykk på et spørsmål for å se hva alle har tippet.</p>
+
       <div className="grid grid-cols-1 gap-3">
         {/* Group matches */}
         <div className="rounded-xl border border-border bg-card p-4">
-          <h3 className="mb-3 text-sm font-semibold text-foreground">Gruppespillskamper</h3>
-          <div className="flex flex-col gap-1.5">
+          <div className="mb-2 flex items-baseline justify-between gap-2">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <span className="text-muted-foreground">⚽</span>
+              Gruppespillskamper
+            </h3>
+            <span className="flex shrink-0 items-baseline gap-1.5 text-xs tabular-nums">
+              <span className="font-semibold text-foreground">
+                {score.matchPoints} / {matchMax}
+              </span>
+              {(() => {
+                const left = score.matches.filter((x) => x.open).length * 2
+                return left > 0 ? <span className="font-medium text-primary/70">+{left} mulig</span> : null
+              })()}
+            </span>
+          </div>
+          <div className="divide-y divide-border">
             {matches.map((m) => {
               const pm = c.groupMatches.find((g) => g.id === m.id)
               const r = results[m.id]
@@ -97,9 +360,10 @@ export function ContestantDetail({
               const settled = phase === "finished" && r?.home != null && r?.away != null
               const mb = score.matches.find((x) => x.id === m.id)
               return (
-                <div
+                <MatchRow
                   key={m.id}
-                  className="flex items-center gap-2 rounded-lg bg-secondary/30 px-2.5 py-2 text-sm"
+                  guesses={matchGuesses(m.id)}
+                  correct={settled ? `${r!.home}–${r!.away}` : null}
                 >
                   <span className="flex size-5 shrink-0 items-center justify-center rounded bg-secondary text-[10px] font-bold text-secondary-foreground">
                     {m.group}
@@ -108,8 +372,8 @@ export function ContestantDetail({
                     <span className="truncate">{m.home}</span>
                     <Flag team={m.home} className="h-3 w-4" />
                   </span>
-                  <span className="shrink-0 rounded bg-card px-1.5 py-0.5 font-semibold tabular-nums">
-                    {pm && pm.home != null ? `${pm.home}–${pm.away}` : "—"}
+                  <span className="shrink-0 rounded bg-secondary/50 px-1.5 py-0.5 font-semibold tabular-nums">
+                    {pm && pm.home != null ? `${pm.home}–${pm.away}` : "-"}
                   </span>
                   <span className="flex min-w-0 flex-1 items-center gap-1.5">
                     <Flag team={m.away} className="h-3 w-4" />
@@ -125,9 +389,7 @@ export function ContestantDetail({
                           <span
                             className={cn(
                               "rounded px-1 text-[10px] font-semibold",
-                              mb.exactHit
-                                ? "bg-accent text-accent-foreground"
-                                : "bg-primary/15 text-primary",
+                              mb.exactHit ? "bg-accent text-accent-foreground" : "bg-primary/15 text-primary",
                             )}
                           >
                             +{mb.points}
@@ -137,112 +399,213 @@ export function ContestantDetail({
                         )}
                       </span>
                     ) : phase === "live" ? (
-                      <span className="text-[10px] font-medium text-accent-foreground">spilles nå</span>
-                    ) : phase === "awaiting" ? (
-                      <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400">
-                        henter resultat
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary">
+                        <span className="animate-live inline-flex size-1.5 rounded-full bg-primary" />
+                        spilles nå
                       </span>
+                    ) : phase === "awaiting" ? (
+                      <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400">henter resultat</span>
                     ) : (
-                      <span className="text-[10px] text-muted-foreground">ikke spilt</span>
+                      <span className="text-[10px] font-medium text-primary/60">+2 mulig</span>
                     )}
                   </span>
-                </div>
+                </MatchRow>
               )
             })}
           </div>
         </div>
 
-        <SectionCard title="Grupper (2 poeng per rett)">
+        <SectionCard title="Grupper (2 poeng per rett)" icon={<LayoutGrid className="size-4" />} lines={Object.values(b.groupQuestions)}>
           {groupQuestions.map((q) => (
-            <Row key={q.key} label={q.text}>
-              <span className="font-medium text-foreground">
-                {c.groupQuestions[q.key] || "—"}
-              </span>
-            </Row>
+            <ExpandableRow
+              key={q.key}
+              label={q.text}
+              line={b.groupQuestions[q.key]}
+              correct={b.groupQuestions[q.key]?.correct ?? null}
+              guesses={bonusGuesses("groupQuestions", q.key, (p) => jn(p.groupQuestions[q.key]))}
+            >
+              <span className="font-medium text-foreground">{c.groupQuestions[q.key] || "-"}</span>
+            </ExpandableRow>
           ))}
         </SectionCard>
 
-        <SectionCard title="Norge (2 poeng per rett)">
-          <Row label="Scorer Norge 7+ mål i gruppespillet?">
-            <JN value={c.norway.score7plus} />
-          </Row>
-          <Row label="Slipper Norge inn 4+ mål i gruppespillet?">
-            <JN value={c.norway.concede4plus} />
-          </Row>
-          <Row label="Møter Norge Brasil i finalespillet?">
-            <JN value={c.norway.meetBrazil} />
-          </Row>
-          <Row label="Hvem når lengst av Norge og England?">
-            <span className="font-medium text-foreground">{c.norway.furthest || "—"}</span>
-          </Row>
-          <Row label="Norges toppscorer">
-            <span className="font-medium text-foreground">{c.norway.topScorer || "—"}</span>
-          </Row>
+        <SectionCard title="Norge (2 poeng per rett)" icon={<Flag team="Norge" className="h-3 w-4" />} lines={Object.values(b.norway)}>
+          <ExpandableRow
+            label="Scorer Norge 7+ mål i gruppespillet?"
+            line={b.norway.score7plus}
+            correct={b.norway.score7plus.correct}
+            guesses={bonusGuesses("norway", "score7plus", (p) => jn(p.norway.score7plus))}
+          >
+            <span className="font-medium text-foreground">{jn(c.norway.score7plus)}</span>
+          </ExpandableRow>
+          <ExpandableRow
+            label="Slipper Norge inn 4+ mål i gruppespillet?"
+            line={b.norway.concede4plus}
+            correct={b.norway.concede4plus.correct}
+            guesses={bonusGuesses("norway", "concede4plus", (p) => jn(p.norway.concede4plus))}
+          >
+            <span className="font-medium text-foreground">{jn(c.norway.concede4plus)}</span>
+          </ExpandableRow>
+          <ExpandableRow
+            label="Møter Norge Brasil i finalespillet?"
+            line={b.norway.meetBrazil}
+            correct={b.norway.meetBrazil.correct}
+            guesses={bonusGuesses("norway", "meetBrazil", (p) => jn(p.norway.meetBrazil))}
+          >
+            <span className="font-medium text-foreground">{jn(c.norway.meetBrazil)}</span>
+          </ExpandableRow>
+          <ExpandableRow
+            label="Hvem når lengst av Norge og England?"
+            line={b.norway.furthest}
+            correct={b.norway.furthest.correct}
+            guesses={bonusGuesses("norway", "furthest", (p) => p.norway.furthest)}
+          >
+            <span className="font-medium text-foreground">{c.norway.furthest || "-"}</span>
+          </ExpandableRow>
+          <ExpandableRow
+            label="Norges toppscorer"
+            line={b.norway.topScorer}
+            correct={b.norway.topScorer.correct}
+            guesses={bonusGuesses("norway", "topScorer", (p) => p.norway.topScorer)}
+          >
+            <span className="font-medium text-foreground">{c.norway.topScorer || "-"}</span>
+          </ExpandableRow>
         </SectionCard>
 
-        <SectionCard title="Sluttspillet (2 poeng per rett)">
-          <Row label="Går Sverige videre fra gruppespillet?">
-            <JN value={c.knockout.swedenAdvances} />
-          </Row>
-          <Row label="Antall europeiske lag til sekstendedelsfinale">
-            <span className="font-medium text-foreground">{c.knockout.europeanTeams || "—"}</span>
-          </Row>
-          <Row label="Vertsnasjon(er) videre til åttendedelsfinale">
-            <span className="font-medium text-foreground">{c.knockout.hostsAdvance || "—"}</span>
-          </Row>
-          <div className="py-2">
-            <span className="text-sm text-muted-foreground">8 land til kvartfinale</span>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {c.knockout.quarterfinalists.length ? (
-                c.knockout.quarterfinalists.map((t, i) => (
-                  <span
-                    key={`${t}-${i}`}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground"
-                  >
-                    <Flag team={t} className="h-3 w-4" />
-                    {t}
-                  </span>
-                ))
-              ) : (
-                <span className="text-sm text-foreground">—</span>
-              )}
+        <SectionCard title="Sluttspillet (2 poeng per rett)" icon={<Swords className="size-4" />} lines={Object.values(b.knockout)}>
+          <ExpandableRow
+            label="Går Sverige videre fra gruppespillet?"
+            line={b.knockout.swedenAdvances}
+            correct={b.knockout.swedenAdvances.correct}
+            guesses={bonusGuesses("knockout", "swedenAdvances", (p) => jn(p.knockout.swedenAdvances))}
+          >
+            <span className="font-medium text-foreground">{jn(c.knockout.swedenAdvances)}</span>
+          </ExpandableRow>
+          <ExpandableRow
+            label="Antall europeiske lag til sekstendedelsfinale"
+            line={b.knockout.europeanTeams}
+            correct={b.knockout.europeanTeams.correct}
+            guesses={bonusGuesses("knockout", "europeanTeams", (p) => p.knockout.europeanTeams)}
+          >
+            <span className="font-medium text-foreground">{c.knockout.europeanTeams || "-"}</span>
+          </ExpandableRow>
+          <ExpandableRow
+            label="Vertsnasjon(er) videre til åttendedelsfinale"
+            line={b.knockout.hostsAdvance}
+            correct={b.knockout.hostsAdvance.correct}
+            guesses={bonusGuesses("knockout", "hostsAdvance", (p) => p.knockout.hostsAdvance)}
+          >
+            <span className="font-medium text-foreground">{c.knockout.hostsAdvance || "-"}</span>
+          </ExpandableRow>
+          <ExpandableRow
+            label="8 land til kvartfinale (2 poeng per rett)"
+            line={b.knockout.quarterfinalists}
+            correct={b.knockout.quarterfinalists.correct}
+            guesses={bonusGuesses("knockout", "quarterfinalists", (p) => p.knockout.quarterfinalists.join(", "))}
+          >
+            <span className="font-medium text-foreground">{c.knockout.quarterfinalists.length || "-"} lag</span>
+          </ExpandableRow>
+          {b.knockout.quarterfinalists.chips?.length ? (
+            <div className="flex flex-wrap gap-1.5 py-2">
+              {b.knockout.quarterfinalists.chips.map((chip, i) => (
+                <span
+                  key={`${chip.value}-${i}`}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
+                    chip.hit ? "bg-accent text-accent-foreground" : "bg-secondary text-secondary-foreground",
+                  )}
+                >
+                  <Flag team={chip.value} className="h-3 w-4" />
+                  {chip.value}
+                </span>
+              ))}
             </div>
-          </div>
+          ) : null}
         </SectionCard>
 
-        <SectionCard title="Finalen">
-          <Row label="Finalelag (4 poeng)">
+        <SectionCard title="Finalen" icon={<Medal className="size-4" />} lines={Object.values(b.final)}>
+          <ExpandableRow
+            label="Finalelag (4 poeng, 2 for ett rett)"
+            line={b.final.teams}
+            correct={b.final.teams.correct}
+            guesses={bonusGuesses("final", "teams", (p) => `${p.final.team1 || "?"} – ${p.final.team2 || "?"}`)}
+          >
             <span className="inline-flex items-center gap-2 font-medium text-foreground">
               <span className="inline-flex items-center gap-1.5">
                 <Flag team={c.final.team1} className="h-3 w-4" />
-                {c.final.team1 || "—"}
+                {c.final.team1 || "-"}
               </span>
               <span className="text-muted-foreground">vs</span>
               <span className="inline-flex items-center gap-1.5">
                 <Flag team={c.final.team2} className="h-3 w-4" />
-                {c.final.team2 || "—"}
+                {c.final.team2 || "-"}
               </span>
             </span>
-          </Row>
-          <Row label="Målscore etter 90 min (3 poeng)">
+          </ExpandableRow>
+          <ExpandableRow
+            label="Målscore etter 90 min (3 poeng)"
+            line={b.final.score}
+            correct={b.final.score.correct}
+            guesses={bonusGuesses("final", "score", (p) =>
+              p.final.score1 != null ? `${p.final.score1}–${p.final.score2}` : "-",
+            )}
+          >
             <span className="font-medium tabular-nums text-foreground">
-              {c.final.score1 != null ? `${c.final.score1}–${c.final.score2}` : "—"}
+              {c.final.score1 != null ? `${c.final.score1}–${c.final.score2}` : "-"}
             </span>
-          </Row>
-          <Row label="Verdensmester (5 poeng)">
+          </ExpandableRow>
+          <ExpandableRow
+            label="Verdensmester (5 poeng)"
+            line={b.final.champion}
+            correct={b.final.champion.correct}
+            guesses={bonusGuesses("final", "champion", (p) => p.final.champion)}
+          >
             <span className="inline-flex items-center gap-1.5 font-semibold text-foreground">
               <Flag team={c.final.champion} className="h-3 w-4" />
-              {c.final.champion || "—"}
+              {c.final.champion || "-"}
             </span>
-          </Row>
-          <Row label="VMs toppscorer fra land (3 poeng)">
+          </ExpandableRow>
+          <ExpandableRow
+            label="VMs toppscorer fra land (3 poeng)"
+            line={b.final.topScorerCountry}
+            correct={b.final.topScorerCountry.correct}
+            guesses={bonusGuesses("final", "topScorerCountry", (p) => p.final.topScorerCountry)}
+          >
             <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
               <Flag team={c.final.topScorerCountry} className="h-3 w-4" />
-              {c.final.topScorerCountry || "—"}
+              {c.final.topScorerCountry || "-"}
             </span>
-          </Row>
+          </ExpandableRow>
         </SectionCard>
       </div>
     </section>
+  )
+}
+
+// A group-match row: rich header (flags + result) that expands to everyone's tips.
+function MatchRow({
+  guesses,
+  correct,
+  children,
+}: {
+  guesses: Guess[]
+  correct: string | null
+  children: React.ReactNode
+}) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center gap-2 py-2 text-left text-sm"
+      >
+        {children}
+        <ChevronDown
+          className={cn("size-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")}
+        />
+      </button>
+      {open ? <GuessPanel guesses={guesses} correct={correct} /> : null}
+    </div>
   )
 }

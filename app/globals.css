@@ -166,4 +166,117 @@
   html {
     @apply font-sans;
   }
+  /* Tailwind v4 / browsers leave <button> on the default arrow cursor. Give every
+     genuinely interactive element a pointer, and disabled controls a clear blocked
+     cursor. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled),
+  label[for],
+  summary,
+  a {
+    cursor: pointer;
+  }
+  button:disabled,
+  [role="button"][aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
+
+@layer utilities {
+  /* A football cursor — used sparingly (only the podium) for a playful touch.
+     Falls back to pointer where SVG cursors aren't supported (e.g. Safari). */
+  .cursor-football {
+    cursor: url("/football-cursor.svg") 16 16, pointer;
+  }
+
+  /* Score bars grow from 0 to their target width on first paint - no JS needed.
+     The width target is supplied per element via the --bar-w custom property. */
+  @keyframes grow-bar {
+    from {
+      width: 0;
+    }
+    to {
+      width: var(--bar-w, 0%);
+    }
+  }
+  .bar-grow {
+    width: var(--bar-w, 0%);
+    animation: grow-bar 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* A slow diagonal light sweep used to make the leader's card feel "alive". */
+  @keyframes sheen {
+    0% {
+      transform: translateX(-130%) skewX(-18deg);
+    }
+    100% {
+      transform: translateX(330%) skewX(-18deg);
+    }
+  }
+  .animate-sheen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 30%,
+      color-mix(in oklab, white 35%, transparent) 50%,
+      transparent 70%
+    );
+    transform: translateX(-130%) skewX(-18deg);
+    animation: sheen 4.5s ease-in-out 1s infinite;
+    pointer-events: none;
+  }
+
+  /* Gentle bob for the trophy mark in the header. */
+  @keyframes float-soft {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-3px);
+    }
+  }
+  .animate-float-soft {
+    animation: float-soft 3.5s ease-in-out infinite;
+  }
+
+  /* Soft pulsing ring for the live indicator. */
+  @keyframes live-ping {
+    0% {
+      box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 70%, transparent);
+    }
+    70% {
+      box-shadow: 0 0 0 7px transparent;
+    }
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+    }
+  }
+  .animate-live {
+    animation: live-ping 1.8s ease-out infinite;
+  }
+
+  /* Faint field stripes / dot grid for hero backdrops. */
+  .bg-pitch {
+    background-image: radial-gradient(
+      circle at 1px 1px,
+      color-mix(in oklab, currentColor 14%, transparent) 1px,
+      transparent 0
+    );
+    background-size: 22px 22px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bar-grow,
+    .animate-sheen::after,
+    .animate-float-soft,
+    .animate-live {
+      animation: none;
+    }
+    .bar-grow {
+      width: var(--bar-w, 0%);
+    }
+  }
 }
