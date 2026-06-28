@@ -43,6 +43,7 @@ function merge(derived: Fasit): Fasit {
       quarterfinalists: MANUAL.knockout.quarterfinalists?.length
         ? MANUAL.knockout.quarterfinalists
         : derived.knockout.quarterfinalists,
+      eliminated: derived.knockout.eliminated ?? [],
     },
     final: {
       team1: pick(MANUAL.final.team1, derived.final.team1),

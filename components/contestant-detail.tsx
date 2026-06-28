@@ -39,9 +39,12 @@ function jn(value: string): string {
 // Compact status pill: open (still winnable), earned, or lost.
 function PointsBadge({ line }: { line?: AnswerLine }) {
   if (!line || line.status === "pending") {
+    // Points still winnable: the line's max, minus anything already forfeited
+    // (e.g. QF picks on knocked-out teams).
+    const possible = (line?.max ?? 0) - (line?.forfeited ?? 0)
     return (
       <span className="inline-flex items-center gap-1 rounded-full border border-dashed border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-        +{line?.max ?? 0} mulig
+        +{possible} mulig
       </span>
     )
   }
@@ -126,12 +129,15 @@ function ExpandableRow({
   line,
   correct,
   guesses,
+  panel,
   children,
 }: {
   label: string
   line?: AnswerLine
   correct: string | null
-  guesses: Guess[]
+  guesses?: Guess[]
+  // Custom expanded content; falls back to the standard per-contestant guess grid.
+  panel?: React.ReactNode
   children: React.ReactNode
 }) {
   const [open, setOpen] = useState(false)
@@ -151,7 +157,7 @@ function ExpandableRow({
           />
         </span>
       </button>
-      {open ? <GuessPanel guesses={guesses} correct={correct} /> : null}
+      {open ? panel ?? <GuessPanel guesses={guesses ?? []} correct={correct} /> : null}
     </div>
   )
 }
@@ -170,7 +176,7 @@ function SectionCard({
   const earned = lines ? lines.reduce((s, l) => s + l.points, 0) : null
   const max = lines ? lines.reduce((s, l) => s + l.max, 0) : null
   const remaining = lines
-    ? lines.filter((l) => l.status === "pending").reduce((s, l) => s + l.max, 0)
+    ? lines.filter((l) => l.status === "pending").reduce((s, l) => s + l.max - (l.forfeited ?? 0), 0)
     : 0
   const pct = max ? Math.round((earned! / max) * 100) : 0
   const ceilPct = max ? Math.round(((earned! + remaining) / max) * 100) : 0
@@ -501,7 +507,13 @@ export function ContestantDetail({
             label="8 land til kvartfinale (2 poeng per rett)"
             line={b.knockout.quarterfinalists}
             correct={b.knockout.quarterfinalists.correct}
-            guesses={bonusGuesses("knockout", "quarterfinalists", (p) => p.knockout.quarterfinalists.join(", "))}
+            panel={
+              <QuarterfinalistsMatrix
+                everyone={everyone}
+                focusName={c.name}
+                line={b.knockout.quarterfinalists}
+              />
+            }
           >
             <span className="font-medium text-foreground">{c.knockout.quarterfinalists.length || "-"} lag</span>
           </ExpandableRow>
@@ -510,12 +522,17 @@ export function ContestantDetail({
               {b.knockout.quarterfinalists.chips.map((chip, i) => (
                 <span
                   key={`${chip.value}-${i}`}
+                  title={chip.dead && !chip.hit ? `${chip.value} er slått ut` : undefined}
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
-                    chip.hit ? "bg-accent text-accent-foreground" : "bg-secondary text-secondary-foreground",
+                    chip.hit
+                      ? "bg-accent text-accent-foreground"
+                      : chip.dead
+                        ? "bg-muted text-muted-foreground line-through decoration-muted-foreground/60"
+                        : "bg-secondary text-secondary-foreground",
                   )}
                 >
-                  <Flag team={chip.value} className="h-3 w-4" />
+                  <Flag team={chip.value} className={cn("h-3 w-4", chip.dead && !chip.hit && "opacity-40 grayscale")} />
                   {chip.value}
                 </span>
               ))}
@@ -579,6 +596,215 @@ export function ContestantDetail({
         </SectionCard>
       </div>
     </section>
+  )
+}
+
+// Side-by-side comparison of everyone's 8 quarterfinalist picks.
+// Countries are columns (most-picked first, so consensus sits left and the
+// differentiators fall to the right); contestants are rows.
+function QuarterfinalistsMatrix({
+  everyone,
+  focusName,
+  line,
+}: {
+  everyone: { bd: ScoreBreakdown; person: Contestant }[]
+  focusName: string
+  line: AnswerLine
+}) {
+  const decided = line.status !== "pending" && !!line.correct
+  const correctSet = new Set(
+    decided ? line.correct!.split(",").map((s) => s.trim()).filter(Boolean) : [],
+  )
+
+  // Teams already knocked out: a pick on one is wrong even before the full
+  // quarterfinal lineup is settled. Normalized so lookups are case-insensitive.
+  const deadSet = new Set((line.eliminated ?? []).map((t) => t.trim().toLowerCase()))
+  const isDead = (t: string) => deadSet.has(t.trim().toLowerCase())
+
+  // Popularity per country, plus any qualified team that nobody picked.
+  const counts = new Map<string, number>()
+  for (const { person } of everyone) {
+    for (const t of person.knockout.quarterfinalists) counts.set(t, (counts.get(t) ?? 0) + 1)
+  }
+  for (const t of correctSet) if (!counts.has(t)) counts.set(t, 0)
+  const columns = [...counts.keys()].sort(
+    (a, b) => (counts.get(b)! - counts.get(a)!) || a.localeCompare(b, "nb"),
+  )
+  const anyDead = columns.some(isDead)
+
+  const focusPicks = new Set(
+    everyone.find((e) => e.person.name === focusName)?.person.knockout.quarterfinalists ?? [],
+  )
+
+  const rows = everyone.map(({ bd, person }) => {
+    const picks = new Set(person.knockout.quarterfinalists)
+    const qf = bd.bonus.knockout.quarterfinalists
+    return {
+      name: person.name,
+      focused: person.name === focusName,
+      picks,
+      hits: qf.chips?.filter((ch) => ch.hit).length ?? 0,
+      points: qf.points,
+      // Picks already eliminated — shown as a running "slått ut" count while pending.
+      dead: [...picks].filter((t) => isDead(t)).length,
+      shared: [...picks].filter((t) => focusPicks.has(t)).length,
+    }
+  })
+
+  if (columns.length === 0) {
+    return <p className="px-1 py-3 text-xs text-muted-foreground">Ingen tips registrert ennå.</p>
+  }
+
+  return (
+    <div className="mb-2 mt-1 rounded-lg bg-secondary/30 p-2">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-1">
+        <p className="text-[11px] text-muted-foreground">
+          Hver kolonne er et land — tallet viser hvor mange som tippet det. Mest populære først.
+        </p>
+        <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+          {decided ? (
+            <>
+              <span className="inline-flex items-center gap-1">
+                <Check className="size-3 text-accent" /> rett
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <X className="size-3 text-muted-foreground/70" /> bom
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="inline-flex items-center gap-1">
+                <span className="size-2 rounded-full bg-primary/70" /> tippet
+              </span>
+              {anyDead ? (
+                <span className="inline-flex items-center gap-1">
+                  <X className="size-3 text-muted-foreground/70" /> slått ut
+                </span>
+              ) : null}
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full border-separate border-spacing-0 text-sm">
+          <thead>
+            <tr>
+              <th
+                scope="col"
+                className="sticky left-0 z-20 bg-card px-2 pb-1.5 text-left align-bottom text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
+              >
+                Deltaker
+              </th>
+              <th
+                scope="col"
+                title={`Felles med ${focusName}`}
+                className="px-1.5 pb-1.5 text-center align-bottom text-[10px] font-medium text-muted-foreground"
+              >
+                Felles
+              </th>
+              {columns.map((t) => {
+                const qualified = decided && correctSet.has(t)
+                // Greyed out once knocked out, or (when fully decided) didn't reach the QF.
+                const eliminated = !qualified && (isDead(t) || decided)
+                return (
+                  <th key={t} scope="col" className="px-0 pb-1.5 align-bottom">
+                    <div className="flex flex-col items-center gap-1">
+                      <Flag
+                        team={t}
+                        className={cn(
+                          "h-3.5 w-5",
+                          qualified && "ring-2 ring-accent",
+                          eliminated && "opacity-40 grayscale",
+                        )}
+                      />
+                      <span className="sr-only">{t}</span>
+                      <span
+                        className={cn(
+                          "text-[10px] tabular-nums",
+                          qualified ? "font-semibold text-foreground" : "text-muted-foreground",
+                        )}
+                      >
+                        {counts.get(t) ?? 0}
+                      </span>
+                    </div>
+                  </th>
+                )
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.name}>
+                <th
+                  scope="row"
+                  className={cn(
+                    "sticky left-0 z-10 max-w-[8.5rem] truncate bg-card px-2 py-1 text-left text-xs font-medium",
+                    r.focused ? "border-l-2 border-accent font-bold text-foreground" : "text-foreground/90",
+                  )}
+                >
+                  <span className="flex items-center gap-1">
+                    {r.focused ? <span className="text-accent" aria-hidden="true">★</span> : null}
+                    <span className="truncate">{r.name}</span>
+                    {decided ? (
+                      <span className="ml-auto shrink-0 pl-1 text-[10px] font-semibold tabular-nums text-muted-foreground">
+                        {r.points}p
+                      </span>
+                    ) : r.dead > 0 ? (
+                      <span
+                        className="ml-auto shrink-0 pl-1 text-[10px] font-medium tabular-nums text-muted-foreground"
+                        title={`${r.dead} av tipsene er slått ut`}
+                      >
+                        −{r.dead}
+                      </span>
+                    ) : null}
+                  </span>
+                </th>
+                <td
+                  className={cn(
+                    "px-1.5 py-1 text-center text-xs tabular-nums",
+                    r.focused && "bg-primary/[0.06]",
+                  )}
+                >
+                  {r.focused ? (
+                    <span className="text-muted-foreground">—</span>
+                  ) : (
+                    <span className="font-semibold text-foreground">{r.shared}</span>
+                  )}
+                </td>
+                {columns.map((t) => {
+                  const picked = r.picks.has(t)
+                  const hit = picked && decided && correctSet.has(t)
+                  // A pick is a known miss if its team is out, or the lineup is settled
+                  // and the team isn't in it.
+                  const miss = picked && !hit && (isDead(t) || decided)
+                  return (
+                    <td
+                      key={t}
+                      className={cn(
+                        "border-l border-border/40 px-1 py-1 text-center",
+                        hit && "bg-accent/10",
+                        r.focused && !hit && "bg-primary/[0.06]",
+                      )}
+                    >
+                      {!picked ? (
+                        <span className="sr-only">nei</span>
+                      ) : hit ? (
+                        <Check className="mx-auto size-3.5 text-accent" />
+                      ) : miss ? (
+                        <X className="mx-auto size-3 text-muted-foreground/60" />
+                      ) : (
+                        <span className="mx-auto block size-2.5 rounded-full bg-primary/70" />
+                      )}
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   )
 }
 

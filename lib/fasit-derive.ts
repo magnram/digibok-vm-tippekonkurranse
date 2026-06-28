@@ -95,7 +95,7 @@ export function bestThirdOutcome(
 const blankFasit = (): Fasit => ({
   groupQuestions: { gqA: "", gqB: "", gqC: "", gqD: "", gqF: "", gqG: "", gqI: "", gqK: "" },
   norway: { score7plus: "", concede4plus: "", meetBrazil: "", furthest: "", topScorer: "" },
-  knockout: { swedenAdvances: "", europeanTeams: "", hostsAdvance: "", quarterfinalists: [] },
+  knockout: { swedenAdvances: "", europeanTeams: "", hostsAdvance: "", quarterfinalists: [], eliminated: [] },
   final: { team1: "", team2: "", score1: null, score2: null, champion: "", topScorerCountry: "" },
 })
 
@@ -297,6 +297,16 @@ export function deriveFasit(input: FasitInput): Fasit {
   if (stageKnown("QUARTER_FINALS")) {
     f.knockout.quarterfinalists = [...stageTeams("QUARTER_FINALS")]
   }
+
+  // Every team known to be knocked out (lost a knockout tie, or didn't advance from
+  // the group). Lets the UI mark QF picks on these teams as wrong before the full
+  // quarterfinal lineup is settled. Drawn from the group tables, so it covers all
+  // participants, not just those that reached the bracket.
+  const allTeams = new Set<string>()
+  for (const st of standingByLetter.values()) {
+    for (const row of st.table) allTeams.add(toNo(row.team.name))
+  }
+  f.knockout.eliminated = [...allTeams].filter((t) => t && eliminated(t))
 
   // === Final ==============================================================
   if (finalMatch?.homeTeam?.name && finalMatch.awayTeam?.name) {

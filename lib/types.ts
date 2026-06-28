@@ -64,6 +64,10 @@ export type Fasit = {
     europeanTeams: string
     hostsAdvance: string
     quarterfinalists: string[]
+    // Teams that can no longer reach the quarterfinals (lost a knockout tie, or are
+    // out of the group stage). Used to mark QF picks as known-wrong before the full
+    // quarterfinal lineup is settled. Derived only; not manually entered.
+    eliminated?: string[]
   }
   final: {
     team1: string
@@ -123,7 +127,14 @@ export type AnswerLine = {
   max: number // maximum possible
   status: AnswerStatus
   correct: string | null // the fasit answer for display, null while pending
-  chips?: { value: string; hit: boolean }[] // per-item correctness (quarterfinalists)
+  // per-item correctness (quarterfinalists). `dead` = the pick is already
+  // impossible because that team is knocked out, even if the line is still pending.
+  chips?: { value: string; hit: boolean; dead?: boolean }[]
+  // Of a still-pending line's `max`, how many points are already forfeited (e.g. QF
+  // picks on knocked-out teams). Subtracted from "still possible" so the ceiling is honest.
+  forfeited?: number
+  // Teams known to be knocked out, for marking QF picks as wrong early (quarterfinalists only).
+  eliminated?: string[]
 }
 
 // All non-match rounds, keyed by field so the UI can look up each line.

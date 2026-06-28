@@ -76,26 +76,33 @@ function single(
 }
 
 // 8 quarterfinalists, 2 points per correctly named team (order-independent).
-function quarterfinalists(predicted: string[], fasit: string[]): AnswerLine {
+// `eliminated` are teams already knocked out: a pick on one can no longer score, so
+// it's flagged as a known miss (`dead`) and its points drop out of "still possible"
+// even before the full quarterfinal lineup is known.
+function quarterfinalists(predicted: string[], fasit: string[], eliminated: string[] = []): AnswerLine {
   const max = 8 * POINTS.quarterfinalist
   const knownFasit = fasit.filter(decided)
   const isDecided = knownFasit.length > 0
   const fasitSet = new Set(knownFasit.map(canon))
+  const deadSet = new Set(eliminated.map(canon))
 
   const matched = new Set<string>()
   const chips = predicted.map((value) => {
     const c = canon(value)
     const hit = isDecided && fasitSet.has(c) && !matched.has(c)
     if (hit) matched.add(c)
-    return { value, hit }
+    // A team can't be both a confirmed quarterfinalist and eliminated; guard anyway.
+    const dead = !hit && deadSet.has(c)
+    return { value, hit, dead }
   })
 
   const hits = chips.filter((ch) => ch.hit).length
+  const deadCount = chips.filter((ch) => ch.dead).length
   let status: AnswerStatus
-  if (!isDecided) status = "pending"
-  else if (hits === 8) status = "correct"
-  else if (hits > 0) status = "partial"
-  else status = "wrong"
+  if (isDecided) status = hits === 8 ? "correct" : hits > 0 ? "partial" : "wrong"
+  // Not yet decided, but every pick is already knocked out: the line is lost.
+  else if (predicted.length > 0 && deadCount === predicted.length) status = "wrong"
+  else status = "pending"
 
   return {
     key: "quarterfinalists",
@@ -104,6 +111,9 @@ function quarterfinalists(predicted: string[], fasit: string[]): AnswerLine {
     status,
     correct: isDecided ? knownFasit.join(", ") : null,
     chips,
+    // While still pending, points tied up in knocked-out picks are no longer winnable.
+    forfeited: status === "pending" ? deadCount * POINTS.quarterfinalist : undefined,
+    eliminated,
   }
 }
 
@@ -179,7 +189,11 @@ function scoreBonus(c: Contestant, fasit: Fasit): { bonus: BonusBreakdown; bonus
       key: "hostsAdvance",
       ...single(c.knockout.hostsAdvance, fasit.knockout.hostsAdvance, POINTS.knockout),
     },
-    quarterfinalists: quarterfinalists(c.knockout.quarterfinalists, fasit.knockout.quarterfinalists),
+    quarterfinalists: quarterfinalists(
+      c.knockout.quarterfinalists,
+      fasit.knockout.quarterfinalists,
+      fasit.knockout.eliminated ?? [],
+    ),
   }
 
   const final: Record<string, AnswerLine> = {
@@ -255,7 +269,9 @@ export function scoreContestant(
   const bonusRemaining = [bonus.groupQuestions, bonus.norway, bonus.knockout, bonus.final]
     .flatMap((group) => Object.values(group))
     .filter((line) => line.status === "pending")
-    .reduce((sum, line) => sum + line.max, 0)
+    // A pending line can still earn its max, minus any points already forfeited on it
+    // (e.g. QF picks whose teams are knocked out).
+    .reduce((sum, line) => sum + line.max - (line.forfeited ?? 0), 0)
   const remainingPoints = matchRemaining + bonusRemaining
 
   return {
