@@ -24,31 +24,49 @@ function isFrozen(matches: ApiMatch[]): boolean {
   return !!final && final.status === "FINISHED"
 }
 
-// How long after kickoff a match can still move what we derive from it. A match
-// runs ~2h (more with extra time/penalties), and football-data publishes the
-// knock-on updates — final group tables, the next round's bracket, scorers — a
-// little later still. We treat a match as "active" for this long after kickoff.
+// Statuses where a fixture is done and its own result can't change again.
+const SETTLED = new Set(["FINISHED", "AWARDED", "CANCELLED"])
+
+// How long after kickoff a match's own score can still be settling (extra time,
+// penalties, the API finalizing the result). Keeps live and just-finished matches
+// refreshing.
 const MATCH_ACTIVE_MS = 4 * 60 * 60 * 1000
 
-// Whether it's worth calling the API again. True while any match is within its
-// active window AND that window reaches past our snapshot — i.e. the match kicked
-// off (or finished) since we last fetched and its result or knock-on data could
-// have moved. Crucially this keeps refetching for a few hours AFTER a match ends,
-// not just while it's live: the group tables and the round-of-32 bracket (and the
-// European-team count derived from them) are filled in shortly after the last group
-// game finishes, with no new kickoff to trigger a refresh — so a status-only check
-// gets stuck on a snapshot taken before the bracket finished resolving. Once every
-// match's window has elapsed — overnight, or the gap between rounds — we serve the
-// cache untouched. (We scan the whole WC schedule, not just our 10 tracked matches:
-// the derived fasit depends on tables, bracket progression and scorers across all
-// of it.) With no schedule cached yet, we always refetch.
+// Whether it's worth calling the API again. Two independent triggers; otherwise the
+// snapshot can't have moved and we serve it untouched (and never refetch once
+// `frozen`). We scan the whole WC schedule, not just our 10 tracked matches: the
+// derived fasit depends on tables, bracket progression and scorers across all of it.
+// With no schedule cached yet, we always refetch.
 function shouldRefetch(matches: ApiMatch[], now: number, fetchedAt: number): boolean {
   if (matches.length === 0) return true
-  return matches.some((m) => {
+
+  // (a) A match is live, or finished recently enough that its score could still be
+  //     settling since we last fetched.
+  const liveOrJustPlayed = matches.some((m) => {
     if (!m.utcDate) return false
     const kickoff = Date.parse(m.utcDate)
     if (Number.isNaN(kickoff) || kickoff > now) return false // not started yet
-    return kickoff + MATCH_ACTIVE_MS > fetchedAt // could have moved since we fetched
+    return kickoff + MATCH_ACTIVE_MS > fetchedAt
+  })
+  if (liveOrJustPlayed) return true
+
+  // (b) The next round is still being seeded: an upcoming fixture is missing a team
+  //     even though every match before it has finished. The API fills in the bracket
+  //     — and the tables / European-team count we derive from it — some time after
+  //     the previous round ends, with no kickoff to trigger (a) and at a lag we can't
+  //     predict, so we poll until it appears. Bounded to the gaps between rounds:
+  //     mid-round the next round's fixtures still have un-played matches ahead of
+  //     them, so this stays false and we don't poll needlessly.
+  return matches.some((m) => {
+    if (!m.utcDate) return false
+    const kickoff = Date.parse(m.utcDate)
+    if (Number.isNaN(kickoff) || kickoff <= now) return false // upcoming only
+    if (m.homeTeam?.name && m.awayTeam?.name) return false // already seeded
+    return matches.every((o) => {
+      if (!o.utcDate) return true
+      const k = Date.parse(o.utcDate)
+      return Number.isNaN(k) || k >= kickoff || SETTLED.has(o.status)
+    })
   })
 }
 
