@@ -56,8 +56,8 @@ export function SiteHeader({
       <div className="relative mx-auto w-full max-w-5xl px-4 py-7 md:py-9">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="size-13 shrink-0 overflow-hidden rounded-2xl shadow-lg shadow-black/25 ring-1 ring-white/30">
-              <DigiBokMark className="size-full" />
+            <div className="size-20 shrink-0 overflow-hidden rounded-xl shadow-lg shadow-black/25 ring-1 ring-white/30">
+              <DigiBokMark className="size-full" wcLogo={true} />
             </div>
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary-foreground/70">

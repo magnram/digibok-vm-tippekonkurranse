@@ -6,7 +6,7 @@ export function AboutContest() {
   return (
     <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
       <div className="flex items-center gap-2 border-b border-border bg-secondary/30 px-4 py-2.5">
-        <DigiBokMark className="size-6 rounded-md" />
+        <DigiBokMark className="size-6 rounded-md" wcLogo={false} />
         <h2 className="text-sm font-bold tracking-tight text-foreground">Om konkurransen</h2>
       </div>
       <div className="space-y-3 p-4 text-sm leading-relaxed text-muted-foreground">

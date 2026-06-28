@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     'Stillingen i DigiBoks VM-tippekonkurranse for fotball-VM 2026, arrangert av Knut og oppdatert med live resultater.',
   icons: {
     icon: [{ url: '/img.png', type: 'image/png' }],
-    apple: '/img.png',
+    apple: '/digibok-logo.png',
   },
 }
 
