@@ -24,22 +24,31 @@ function isFrozen(matches: ApiMatch[]): boolean {
   return !!final && final.status === "FINISHED"
 }
 
-// Statuses where a fixture is done and its data can't change again.
-const SETTLED = new Set(["FINISHED", "AWARDED", "CANCELLED"])
+// How long after kickoff a match can still move what we derive from it. A match
+// runs ~2h (more with extra time/penalties), and football-data publishes the
+// knock-on updates — final group tables, the next round's bracket, scorers — a
+// little later still. We treat a match as "active" for this long after kickoff.
+const MATCH_ACTIVE_MS = 4 * 60 * 60 * 1000
 
-// Whether it's worth calling the API again. Only when a fixture has kicked off
-// since the snapshot was taken — some match is live, or has finished but isn't yet
-// recorded as settled in our snapshot. When nothing new has started since the last
-// fetch, every result, table and scorer is already cached, so we keep serving it
-// rather than re-downloading data that can't have moved. (We scan the whole WC
-// schedule, not just our 10 tracked matches: the derived fasit depends on group
-// tables, knockout progression and scorers across all of it.) With no schedule
-// cached yet, we always refetch.
-function shouldRefetch(matches: ApiMatch[], now: number): boolean {
+// Whether it's worth calling the API again. True while any match is within its
+// active window AND that window reaches past our snapshot — i.e. the match kicked
+// off (or finished) since we last fetched and its result or knock-on data could
+// have moved. Crucially this keeps refetching for a few hours AFTER a match ends,
+// not just while it's live: the group tables and the round-of-32 bracket (and the
+// European-team count derived from them) are filled in shortly after the last group
+// game finishes, with no new kickoff to trigger a refresh — so a status-only check
+// gets stuck on a snapshot taken before the bracket finished resolving. Once every
+// match's window has elapsed — overnight, or the gap between rounds — we serve the
+// cache untouched. (We scan the whole WC schedule, not just our 10 tracked matches:
+// the derived fasit depends on tables, bracket progression and scorers across all
+// of it.) With no schedule cached yet, we always refetch.
+function shouldRefetch(matches: ApiMatch[], now: number, fetchedAt: number): boolean {
   if (matches.length === 0) return true
   return matches.some((m) => {
-    if (SETTLED.has(m.status) || !m.utcDate) return false
-    return Date.parse(m.utcDate) <= now
+    if (!m.utcDate) return false
+    const kickoff = Date.parse(m.utcDate)
+    if (Number.isNaN(kickoff) || kickoff > now) return false // not started yet
+    return kickoff + MATCH_ACTIVE_MS > fetchedAt // could have moved since we fetched
   })
 }
 
@@ -59,7 +68,7 @@ export const getWcData = cache(async (): Promise<WcData | null> => {
       // Past the refresh window — but skip the API entirely unless a fixture has
       // kicked off since this snapshot. Finished results can't change, so when
       // nothing new has started we keep serving the cache.
-      if (!shouldRefetch(cached.matches, now)) return cached
+      if (!shouldRefetch(cached.matches, now, Date.parse(cached.fetchedAt))) return cached
     }
     const fresh = await fetchAll(now)
     if (fresh) {
