@@ -179,6 +179,24 @@ export function deriveFasit(input: FasitInput, now: number): Fasit {
     const ms = matches.filter((m) => m.stage === stage)
     return ms.length > 0 && ms.every((m) => !!m.homeTeam?.name && !!m.awayTeam?.name)
   }
+  // The teams that advanced *out* of a knockout stage — the winners of its ties, by
+  // Norwegian name — once every tie in it is settled. This is who moves on to the
+  // next round, read straight from the results rather than from the next round's
+  // fixtures: football-data seeds those at an unpredictable lag, so keying off them
+  // leaves advancement pending long after the matches are actually decided. Returns
+  // null while any tie in the stage is unsettled or lacks a decisive winner.
+  const stageWinners = (stage: string): string[] | null => {
+    const ms = matches.filter((m) => m.stage === stage)
+    if (ms.length === 0) return null
+    const winners: string[] = []
+    for (const m of ms) {
+      if (!matchSettled(m, now)) return null
+      if (m.score?.winner === "HOME_TEAM") winners.push(toNo(m.homeTeam?.name))
+      else if (m.score?.winner === "AWAY_TEAM") winners.push(toNo(m.awayTeam?.name))
+      else return null // settled but the feed hasn't recorded a decisive winner yet
+    }
+    return winners.filter(Boolean)
+  }
 
   const last32 = stageTeams("LAST_32")
   const last32Known = stageKnown("LAST_32")
@@ -304,14 +322,17 @@ export function deriveFasit(input: FasitInput, now: number): Fasit {
     f.knockout.europeanTeams = String([...last32].filter((t) => EUROPEAN_TEAMS.has(t)).length)
   }
 
-  if (stageKnown("LAST_16")) {
-    const last16 = stageTeams("LAST_16")
-    const advancing = HOSTS.filter((h) => last16.has(h))
+  // Which hosts reached the round of 16 = which hosts won their round-of-32 tie.
+  const reachedLast16 = stageWinners("LAST_32")
+  if (reachedLast16) {
+    const advancing = HOSTS.filter((h) => reachedLast16.includes(h))
     f.knockout.hostsAdvance = advancing.length ? advancing.join(" og ") : "Ingen"
   }
 
-  if (stageKnown("QUARTER_FINALS")) {
-    f.knockout.quarterfinalists = [...stageTeams("QUARTER_FINALS")]
+  // The eight quarterfinalists = the winners of the round of 16.
+  const quarterfinalists = stageWinners("LAST_16")
+  if (quarterfinalists) {
+    f.knockout.quarterfinalists = quarterfinalists
   }
 
   // Every team known to be knocked out (lost a knockout tie, or didn't advance from
