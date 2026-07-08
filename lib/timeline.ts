@@ -30,6 +30,7 @@ export function computeDecisionTimes(matches: ApiMatch[]): DecisionTimes {
   const groupLast: Record<string, number> = {}
   const stageEnd: Record<string, number> = {}
   const teamLast: Record<string, number> = {}
+  const last16WinAt: Record<string, number> = {}
   let groupStageEnd: number | null = null
   let norwayBrazil: number | null = null
   let norwayGroupLetter = ""
@@ -65,12 +66,19 @@ export function computeDecisionTimes(matches: ApiMatch[]): DecisionTimes {
     } else if (m.stage) {
       bump(stageEnd, m.stage, c)
     }
+    // A team qualified for the quarterfinals the moment it won its round-of-16 tie —
+    // each at a different time — so credit those picks individually, not all at once
+    // when the last round-of-16 match ends.
+    if (m.stage === "LAST_16") {
+      const winner = m.score?.winner === "HOME_TEAM" ? h : m.score?.winner === "AWAY_TEAM" ? a : ""
+      if (winner) last16WinAt[winner] = c
+    }
     bump(teamLast, h, c)
     bump(teamLast, a, c)
   }
 
   const norwayGroupEnd = norwayGroupLetter ? (groupLast[norwayGroupLetter] ?? null) : null
-  return { groupLast, groupStageEnd, stageEnd, norwayGroupEnd, teamLast, norwayBrazil }
+  return { groupLast, groupStageEnd, stageEnd, norwayGroupEnd, teamLast, norwayBrazil, last16WinAt }
 }
 
 // Decision timestamps for the history graph, derived from the shared snapshot.

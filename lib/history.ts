@@ -25,6 +25,7 @@ export type DecisionTimes = {
   norwayGroupEnd: number | null // Norway's last group match completed
   teamLast: Record<string, number> // Norwegian team name -> that team's last match completed
   norwayBrazil: number | null // a Norway–Brazil knockout tie, if one exists
+  last16WinAt: Record<string, number> // Norwegian team name -> when it won its round-of-16 tie (reached the QF)
 }
 
 // Best-effort milestone used when the live schedule can't be fetched.
@@ -110,6 +111,19 @@ export function buildHistory(
     for (const group of ["groupQuestions", "norway", "knockout", "final"] as const) {
       for (const [key, line] of Object.entries(bd.bonus[group])) {
         if (line.status === "pending" || line.points <= 0) continue
+        // Quarterfinalists is eight independent picks: each correct one earned its
+        // points when that team won its round-of-16 tie, at a different time — so
+        // credit them individually rather than lumping all of them at the round's end.
+        if (group === "knockout" && key === "quarterfinalists" && line.chips) {
+          const hits = line.chips.filter((ch) => ch.hit)
+          const perHit = hits.length ? line.points / hits.length : 0
+          const fallback = bonusDecidedAt(group, key, decisionTimes)
+          for (const ch of hits) {
+            const t = decisionTimes?.last16WinAt?.[ch.value] ?? fallback
+            events.push({ t: clamp(t), p: perHit })
+          }
+          continue
+        }
         events.push({ t: clamp(bonusDecidedAt(group, key, decisionTimes)), p: line.points })
       }
     }
