@@ -3,6 +3,7 @@ import { cache } from "react"
 import { eq } from "drizzle-orm"
 import { getDb, warnDbUnavailable } from "./db"
 import { apiCache } from "./db/schema"
+import { matchSettled } from "./fasit-derive"
 import type { ApiMatch, ApiScorer, ApiStanding } from "./fasit-derive"
 
 // Re-fetch at most once per window while the tournament is live.
@@ -23,9 +24,6 @@ function isFrozen(matches: ApiMatch[]): boolean {
   const final = matches.find((m) => m.stage === "FINAL")
   return !!final && final.status === "FINISHED"
 }
-
-// Statuses where a fixture is done and its own result can't change again.
-const SETTLED = new Set(["FINISHED", "AWARDED", "CANCELLED"])
 
 // How long after kickoff a match's own score can still be settling (extra time,
 // penalties, the API finalizing the result). Keeps live and just-finished matches
@@ -56,7 +54,9 @@ function shouldRefetch(matches: ApiMatch[], now: number, fetchedAt: number): boo
   //     the previous round ends, with no kickoff to trigger (a) and at a lag we can't
   //     predict, so we poll until it appears. Bounded to the gaps between rounds:
   //     mid-round the next round's fixtures still have un-played matches ahead of
-  //     them, so this stays false and we don't poll needlessly.
+  //     them, so this stays false and we don't poll needlessly. "Earlier match is
+  //     done" uses `matchSettled` (kickoff + duration), not the raw feed `status`,
+  //     so a played match the feed left on a live/scheduled status can't wedge this.
   return matches.some((m) => {
     if (!m.utcDate) return false
     const kickoff = Date.parse(m.utcDate)
@@ -65,7 +65,7 @@ function shouldRefetch(matches: ApiMatch[], now: number, fetchedAt: number): boo
     return matches.every((o) => {
       if (!o.utcDate) return true
       const k = Date.parse(o.utcDate)
-      return Number.isNaN(k) || k >= kickoff || SETTLED.has(o.status)
+      return Number.isNaN(k) || k >= kickoff || matchSettled(o, now)
     })
   })
 }

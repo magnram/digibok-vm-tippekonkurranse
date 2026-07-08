@@ -1,3 +1,4 @@
+import { MATCH_DURATION_MS } from "./match-time"
 import { EUROPEAN_TEAMS, norwegianFromEnglish } from "./teams"
 import type { Fasit } from "./types"
 
@@ -57,6 +58,21 @@ const STAGE_RANK: Record<string, number> = {
 // Eight of the twelve third-placed teams advance to the round of 32.
 const BEST_THIRDS = 8
 
+// Feed statuses where a fixture is done and its own result can't change again.
+const TERMINAL_STATUSES = new Set(["FINISHED", "AWARDED", "CANCELLED"])
+
+// Whether a fixture's own result is locked in. Trusts a terminal feed status, but
+// also treats a match whose kickoff is far enough in the past as done:
+// football-data sometimes leaves a played match stuck on a live/scheduled status
+// (the `status` field lags behind reality), and that must never wedge either the
+// next-round refetch poll (lib/wc-api.ts) or answer resolution here.
+export function matchSettled(m: ApiMatch, now: number): boolean {
+  if (TERMINAL_STATUSES.has(m.status)) return true
+  if (!m.utcDate) return false
+  const ko = Date.parse(m.utcDate)
+  return !Number.isNaN(ko) && now - ko > MATCH_DURATION_MS
+}
+
 export type ThirdRecord = { letter: string; finished: boolean; pts: number; gd: number; gf: number }
 
 // Whether the third-placed team of group `letter` has clinched ("in") or been
@@ -103,7 +119,7 @@ const blankFasit = (): Fasit => ({
 // matches behind it are actually decided; everything else stays blank/null so
 // scoring treats it as "avventer" (pending), never awarding points on a
 // provisional table.
-export function deriveFasit(input: FasitInput): Fasit {
+export function deriveFasit(input: FasitInput, now: number): Fasit {
   const { matches, standings, scorers } = input
   const f = blankFasit()
 
@@ -132,7 +148,7 @@ export function deriveFasit(input: FasitInput): Fasit {
   }
   const groupFinished = (L: string): boolean => {
     const ms = groupMatches.get(L) ?? []
-    return ms.length > 0 && ms.every((m) => m.status === "FINISHED")
+    return ms.length > 0 && ms.every((m) => matchSettled(m, now))
   }
 
   const place = (L: string, pos: number): string => {
@@ -167,7 +183,7 @@ export function deriveFasit(input: FasitInput): Fasit {
   const last32 = stageTeams("LAST_32")
   const last32Known = stageKnown("LAST_32")
   const finalMatch = matches.find((m) => m.stage === "FINAL") ?? null
-  const tournamentOver = finalMatch?.status === "FINISHED"
+  const tournamentOver = !!finalMatch && matchSettled(finalMatch, now)
 
   // --- group-stage advancement -------------------------------------------
   // Resolves as soon as it is mathematically certain, rather than waiting for the
@@ -215,7 +231,7 @@ export function deriveFasit(input: FasitInput): Fasit {
   const lostKnockout = (noName: string): boolean =>
     matches.some((m) => {
       if (m.stage === "GROUP_STAGE" || STAGE_RANK[m.stage] === undefined) return false
-      if (m.status !== "FINISHED" || !m.score?.winner) return false
+      if (!matchSettled(m, now) || !m.score?.winner) return false
       const h = toNo(m.homeTeam?.name)
       const a = toNo(m.awayTeam?.name)
       if (h !== noName && a !== noName) return false

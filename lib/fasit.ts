@@ -14,7 +14,7 @@ const MANUAL = manualFasit as Fasit
 export async function getFasit(): Promise<Fasit> {
   const data = await getWcData()
   if (!data) return MANUAL
-  return merge(deriveFasit({ matches: data.matches, standings: data.standings, scorers: data.scorers }))
+  return merge(deriveFasit({ matches: data.matches, standings: data.standings, scorers: data.scorers }, Date.now()))
 }
 
 // Overlays manually-entered answers (fasit.json) on top of the derived ones.
