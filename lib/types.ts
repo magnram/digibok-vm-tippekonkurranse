@@ -76,6 +76,10 @@ export type Fasit = {
     score2: number | null
     champion: string
     topScorerCountry: string
+    // Countries whose players currently lead the tournament scoring chart (tied at
+    // the top goal count). Lets scoring forfeit a top-scorer-country pick once that
+    // country is knocked out and no longer leading. Derived only; not manually entered.
+    topScorerLeaders?: string[]
   }
 }
 

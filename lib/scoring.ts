@@ -75,6 +75,37 @@ function single(
   }
 }
 
+// Champion: a single team pick worth 5. Once that team is knocked out — and while
+// the winner is still undecided — those points are gone, so the line forfeits its max.
+function champion(
+  predicted: string | null | undefined,
+  fasit: string | null | undefined,
+  eliminated: Set<string>,
+): Omit<AnswerLine, "key"> {
+  const line = single(predicted, fasit, POINTS.champion)
+  if (line.status !== "pending") return line
+  const dead = decided(predicted) && eliminated.has(canon(predicted))
+  return { ...line, forfeited: dead ? POINTS.champion : undefined }
+}
+
+// Top-scorer country: a country pick worth 3. Impossible — and so forfeited — once
+// that country's team is out *and* it isn't among the countries currently leading the
+// scoring chart (an eliminated team's goal tally is frozen, so a country already
+// behind can never catch up). A country still tied for the lead keeps its points in
+// play, since no one has pulled ahead of it yet.
+function topScorerCountry(
+  predicted: string | null | undefined,
+  fasit: string | null | undefined,
+  eliminated: Set<string>,
+  leaders: Set<string>,
+): Omit<AnswerLine, "key"> {
+  const line = single(predicted, fasit, POINTS.topScorerCountry)
+  if (line.status !== "pending") return line
+  const p = canon(predicted)
+  const dead = decided(predicted) && eliminated.has(p) && !leaders.has(p)
+  return { ...line, forfeited: dead ? POINTS.topScorerCountry : undefined }
+}
+
 // 8 quarterfinalists, 2 points per correctly named team (order-independent).
 // `eliminated` are teams already knocked out: a pick on one can no longer score, so
 // it's flagged as a known miss (`dead`) and its points drop out of "still possible"
@@ -117,11 +148,19 @@ function quarterfinalists(predicted: string[], fasit: string[], eliminated: stri
   }
 }
 
-// Final pairing: 4 points for both teams (order-independent), 2 for one.
-function finalTeams(pred: Contestant["final"], fasit: Fasit["final"]): Omit<AnswerLine, "key"> {
+// Final pairing: 4 points for both teams (order-independent), 2 for one. While the
+// final is still undecided, each picked finalist that is already knocked out forfeits
+// its 2 points — they can no longer be won.
+function finalTeams(
+  pred: Contestant["final"],
+  fasit: Fasit["final"],
+  eliminated: Set<string>,
+): Omit<AnswerLine, "key"> {
   const max = POINTS.finalBothTeams
   if (!decided(fasit.team1) && !decided(fasit.team2)) {
-    return { points: 0, max, status: "pending", correct: null }
+    const deadCount = [pred.team1, pred.team2].filter(decided).map(canon).filter((p) => eliminated.has(p)).length
+    const forfeited = Math.min(deadCount * POINTS.finalOneTeam, max)
+    return { points: 0, max, status: "pending", correct: null, forfeited: forfeited || undefined }
   }
   const fasitSet = new Set([fasit.team1, fasit.team2].filter(decided).map(canon))
   const used = new Set<string>()
@@ -196,13 +235,18 @@ function scoreBonus(c: Contestant, fasit: Fasit): { bonus: BonusBreakdown; bonus
     ),
   }
 
+  // Teams already out of the tournament, and the countries currently leading the
+  // scoring chart — used to zero out final-round points that can no longer be won.
+  const eliminatedSet = new Set((fasit.knockout.eliminated ?? []).map(canon))
+  const leaderSet = new Set((fasit.final.topScorerLeaders ?? []).map(canon))
+
   const final: Record<string, AnswerLine> = {
-    teams: { key: "teams", ...finalTeams(c.final, fasit.final) },
+    teams: { key: "teams", ...finalTeams(c.final, fasit.final, eliminatedSet) },
     score: { key: "score", ...finalScore(c.final, fasit.final) },
-    champion: { key: "champion", ...single(c.final.champion, fasit.final.champion, POINTS.champion) },
+    champion: { key: "champion", ...champion(c.final.champion, fasit.final.champion, eliminatedSet) },
     topScorerCountry: {
       key: "topScorerCountry",
-      ...single(c.final.topScorerCountry, fasit.final.topScorerCountry, POINTS.topScorerCountry),
+      ...topScorerCountry(c.final.topScorerCountry, fasit.final.topScorerCountry, eliminatedSet, leaderSet),
     },
   }
 

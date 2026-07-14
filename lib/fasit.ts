@@ -52,6 +52,7 @@ function merge(derived: Fasit): Fasit {
       score2: MANUAL.final.score2 != null ? MANUAL.final.score2 : derived.final.score2,
       champion: pick(MANUAL.final.champion, derived.final.champion),
       topScorerCountry: pick(MANUAL.final.topScorerCountry, derived.final.topScorerCountry),
+      topScorerLeaders: derived.final.topScorerLeaders ?? [],
     },
   }
 }

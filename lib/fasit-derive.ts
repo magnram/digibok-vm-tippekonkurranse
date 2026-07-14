@@ -112,7 +112,7 @@ const blankFasit = (): Fasit => ({
   groupQuestions: { gqA: "", gqB: "", gqC: "", gqD: "", gqF: "", gqG: "", gqI: "", gqK: "" },
   norway: { score7plus: "", concede4plus: "", meetBrazil: "", furthest: "", topScorer: "" },
   knockout: { swedenAdvances: "", europeanTeams: "", hostsAdvance: "", quarterfinalists: [], eliminated: [] },
-  final: { team1: "", team2: "", score1: null, score2: null, champion: "", topScorerCountry: "" },
+  final: { team1: "", team2: "", score1: null, score2: null, champion: "", topScorerCountry: "", topScorerLeaders: [] },
 })
 
 // Derives the answer key from live API data. A field is only filled once the
@@ -370,6 +370,16 @@ export function deriveFasit(input: FasitInput, now: number): Fasit {
   }
   if (tournamentOver && scorers.length) {
     f.final.topScorerCountry = toNo(scorers[0].team.name)
+  }
+  // Countries currently tied at the top of the scoring chart. A top-scorer-country
+  // pick can only become impossible once its team is out *and* it isn't among these.
+  if (scorers.length) {
+    const maxGoals = Math.max(...scorers.map((s) => s.goals))
+    const leaders = new Set<string>()
+    for (const s of scorers) {
+      if (s.goals === maxGoals) leaders.add(toNo(s.team.name))
+    }
+    f.final.topScorerLeaders = [...leaders].filter(Boolean)
   }
 
   return f
