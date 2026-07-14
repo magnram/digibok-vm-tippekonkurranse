@@ -293,11 +293,23 @@ export function deriveFasit(input: FasitInput, now: number): Fasit {
   if (norwayMeetsBrazil) f.norway.meetBrazil = "J"
   else if (tournamentOver || eliminated("Norge") || eliminated("Brasil")) f.norway.meetBrazil = "N"
 
-  // Furthest of Norway / England - once neither can progress further.
-  if (tournamentOver || (eliminated("Norge") && eliminated("England"))) {
+  // Furthest of Norway / England. Resolves as soon as the ordering is locked in,
+  // not only once both are out: an eliminated team's depth is frozen, so once one is
+  // out and the other has already reached a strictly deeper round, that team has won
+  // this line for good (it can only stay level or go deeper). "Like langt" can only be
+  // settled with both out (or the VM over), since a still-alive team can still climb.
+  {
+    const outNorge = eliminated("Norge")
+    const outEngland = eliminated("England")
     const rn = reached("Norge")
     const re = reached("England")
-    f.norway.furthest = rn > re ? "Norge" : re > rn ? "England" : "Like langt"
+    if (tournamentOver || (outNorge && outEngland)) {
+      f.norway.furthest = rn > re ? "Norge" : re > rn ? "England" : "Like langt"
+    } else if (outNorge && re > rn) {
+      f.norway.furthest = "England"
+    } else if (outEngland && rn > re) {
+      f.norway.furthest = "Norge"
+    }
   }
 
   // Norway's top scorer - fixed once Norway is out (or the VM is over).
