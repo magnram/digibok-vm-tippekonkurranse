@@ -14,6 +14,8 @@ export type ApiMatch = {
     winner: string | null
     duration?: string
     fullTime: { home: number | null; away: number | null }
+    // Only present when the match went beyond 90 minutes.
+    regularTime?: { home: number | null; away: number | null } | null
   } | null
 }
 
@@ -363,8 +365,11 @@ export function deriveFasit(input: FasitInput, now: number): Fasit {
     f.final.team2 = toNo(finalMatch.awayTeam.name)
   }
   if (tournamentOver && finalMatch?.score) {
-    f.final.score1 = finalMatch.score.fullTime.home
-    f.final.score2 = finalMatch.score.fullTime.away
+    // The question asks for the score after 90 minutes, but the feed's fullTime
+    // includes extra-time goals; regularTime holds the 90-minute score when the
+    // final went beyond regular time.
+    f.final.score1 = finalMatch.score.regularTime?.home ?? finalMatch.score.fullTime.home
+    f.final.score2 = finalMatch.score.regularTime?.away ?? finalMatch.score.fullTime.away
     if (finalMatch.score.winner === "HOME_TEAM") f.final.champion = toNo(finalMatch.homeTeam?.name)
     else if (finalMatch.score.winner === "AWAY_TEAM") f.final.champion = toNo(finalMatch.awayTeam?.name)
   }
